@@ -106,54 +106,95 @@ function appErrorResponse(error: AppError): Response {
   }
 }
 
+const editShortPattern = new URLPattern({ pathname: "/todos/:id/edit/short" });
+const updateShortPattern = new URLPattern({ pathname: "/todos/:id/update/short" });
+
+async function handleTodosList(): Promise<Response> {
+  const todosResult = await getTodos();
+  if (!todosResult.ok) {
+    return appErrorResponse(todosResult.error);
+  }
+
+  return htmlResponse(<TodoList todos={todosResult.value} />);
+}
+
+async function handleTodoEditShort(id: number): Promise<Response> {
+  const todoResult = await getTodo(id);
+  if (!todoResult.ok) {
+    return appErrorResponse(todoResult.error);
+  }
+
+  return htmlResponse(<ShortEditor todo={todoResult.value} />);
+}
+
+async function handleTodoUpdateShort(
+  request: Request,
+  id: number,
+): Promise<Response> {
+  const form = await request.formData();
+  const short = String(form.get("short") ?? "").trim();
+
+  if (short.length < 3) {
+    return new Response("Short must be at least 3 characters.", {
+      status: 400,
+    });
+  }
+
+  const updatedResult = await updateTodoShort(id, short);
+  if (!updatedResult.ok) {
+    return appErrorResponse(updatedResult.error);
+  }
+
+  return htmlResponse(<ShortDisplay todo={updatedResult.value} />);
+}
+
+function parseTodoId(rawId: string | undefined): number | null {
+  if (!rawId) {
+    return null;
+  }
+
+  const id = Number(rawId);
+  if (!Number.isSafeInteger(id) || id < 1) {
+    return null;
+  }
+
+  return id;
+}
+
+async function handlePostTodosRoutes(request: Request, url: URL): Promise<Response> {
+  const editMatch = editShortPattern.exec(url);
+  if (editMatch) {
+    const id = parseTodoId(editMatch.pathname.groups["id"]);
+    if (id === null) {
+      return new Response("Not Found", { status: 404 });
+    }
+
+    return handleTodoEditShort(id);
+  }
+
+  const updateMatch = updateShortPattern.exec(url);
+  if (updateMatch) {
+    const id = parseTodoId(updateMatch.pathname.groups["id"]);
+    if (id === null) {
+      return new Response("Not Found", { status: 404 });
+    }
+
+    return handleTodoUpdateShort(request, id);
+  }
+
+  return new Response("Not Found", { status: 404 });
+}
+
 Bun.serve({
   routes: {
     "/": homepage,
-    "/todos/list": async () => {
-      const todosResult = await getTodos();
-      if (!todosResult.ok) {
-        return appErrorResponse(todosResult.error);
-      }
-      const todos = todosResult.value;
-      return htmlResponse(<TodoList todos={todos} />);
-    },
+    "/todos/list": handleTodosList,
   },
   fetch: async (request) => {
     const url = new URL(request.url);
 
     if (request.method === "POST") {
-      const editMatch = url.pathname.match(/^\/todos\/(\d+)\/edit\/short$/);
-      if (editMatch) {
-        const id = Number(editMatch[1]);
-        const todoResult = await getTodo(id);
-        if (!todoResult.ok) {
-          return appErrorResponse(todoResult.error);
-        }
-        const todo = todoResult.value;
-
-        return htmlResponse(<ShortEditor todo={todo} />);
-      }
-
-      const updateMatch = url.pathname.match(/^\/todos\/(\d+)\/update\/short$/);
-      if (updateMatch) {
-        const id = Number(updateMatch[1]);
-        const form = await request.formData();
-        const short = String(form.get("short") ?? "").trim();
-
-        if (short.length < 3) {
-          return new Response("Short must be at least 3 characters.", {
-            status: 400,
-          });
-        }
-
-        const updatedResult = await updateTodoShort(id, short);
-        if (!updatedResult.ok) {
-          return appErrorResponse(updatedResult.error);
-        }
-        const updatedTodo = updatedResult.value;
-
-        return htmlResponse(<ShortDisplay todo={updatedTodo} />);
-      }
+      return handlePostTodosRoutes(request, url);
     }
 
     return new Response("Not Found", { status: 404 });
