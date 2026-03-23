@@ -3,6 +3,7 @@ import type { ReactElement } from "react";
 import homepage from "./index.html";
 
 import { getTodo, getTodos, updateTodoShort } from "./pg";
+import type { AppError } from "./error";
 import type { TodoRow } from "./types";
 
 function shortSlotId(id: number): string {
@@ -92,13 +93,26 @@ async function htmlResponse(fragment: ReactElement): Promise<Response> {
   });
 }
 
+function appErrorResponse(error: AppError): Response {
+  switch (error.kind) {
+    case "not_found":
+      return new Response(error.message, { status: 404 });
+    case "validation":
+      return new Response(error.message, { status: 400 });
+    case "internal":
+      return new Response(error.message, { status: 500 });
+    default:
+      return new Response("Unexpected error", { status: 500 });
+  }
+}
+
 Bun.serve({
   routes: {
     "/": homepage,
     "/todos/list": async () => {
       const todosResult = await getTodos();
       if (!todosResult.ok) {
-        return new Response(todosResult.error.message, { status: 500 });
+        return appErrorResponse(todosResult.error);
       }
       const todos = todosResult.value;
       return htmlResponse(<TodoList todos={todos} />);
@@ -113,7 +127,7 @@ Bun.serve({
         const id = Number(editMatch[1]);
         const todoResult = await getTodo(id);
         if (!todoResult.ok) {
-          return new Response(todoResult.error.message, { status: 404 });
+          return appErrorResponse(todoResult.error);
         }
         const todo = todoResult.value;
 
@@ -134,7 +148,7 @@ Bun.serve({
 
         const updatedResult = await updateTodoShort(id, short);
         if (!updatedResult.ok) {
-          return new Response(updatedResult.error.message, { status: 404 });
+          return appErrorResponse(updatedResult.error);
         }
         const updatedTodo = updatedResult.value;
 

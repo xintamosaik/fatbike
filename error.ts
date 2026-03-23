@@ -4,5 +4,5 @@ type Result<T, E> = Ok<T> | Err<E>;
 type AppError =
   | { kind: "not_found"; message: string }
   | { kind: "validation"; message: string }
-  | { kind: "conflict"; message: string };
+  | { kind: "internal"; message: string };
 export type { Ok, Err, Result, AppError };
