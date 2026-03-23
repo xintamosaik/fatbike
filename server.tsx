@@ -1,17 +1,21 @@
-import {renderToReadableStream} from "react-dom/server";
+import { renderToReadableStream } from "react-dom/server";
+import homepage from "./index.html";
+
 function Component(props: { message: string }) {
-    return (
-        <body>
-            <h1>{props.message}</h1>
-        </body>
-    );
+  return <div><h1>{props.message}</h1></div>;
 }
 
 Bun.serve({
-    async fetch() {
-        const stream = await renderToReadableStream(<Component message="Hello from server!" />);
-        return new Response(stream, {
-            headers: { "Content-Type": "text/html" },
-        });
+  routes: {
+    "/": homepage,
+    "/hello": async () => {
+      const stream = await renderToReadableStream(
+        <Component message="Hello from server!" />,
+      );
+
+      return new Response(stream, {
+        headers: { "Content-Type": "text/html; charset=utf-8" },
+      });
     },
+  },
 });

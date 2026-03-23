@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/gh/bigskysoftware/fixi@0.9.3/fixi.js"
+        crossorigin="anonymous"
+        integrity="sha256-Qalmv6iqaAnrglOx2AWSoLfJFmXLGtjAIdBgsLc3bgg="></script>
+</head>
+<body>
+    Fetching data from the server...
+    <script>
+        fetch("/hello").then(res => res.text()).then(text => {
+            document.body.innerHTML = text;
+        }).catch(err => {
+            document.body.innerText = "Error fetching data: " + err;
+        });
+    </script>
+</body>
+</html>
