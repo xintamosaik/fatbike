@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>fatbike</title>
     <meta name="color-scheme" content="light dark">
     <script src="https://cdn.jsdelivr.net/gh/bigskysoftware/fixi@0.9.3/fixi.js"
         crossorigin="anonymous"
         integrity="sha256-Qalmv6iqaAnrglOx2AWSoLfJFmXLGtjAIdBgsLc3bgg="></script>
 </head>
 <body>
-    Fetching data from the server...
-    <script>
-        fetch("/hello").then(res => res.text()).then(text => {
-            document.body.innerHTML = text;
-        }) 
-    </script>
+    <main>
+        <h1>fatbike</h1>
+        <p>Shell is loaded. Click to fetch a server-rendered fragment.</p>
+        <button fx-action="/hello" fx-target="#output" fx-swap="innerHTML">Load Hello Fragment</button>
+        <div id="output">No fragment loaded yet.</div>
+    </main>
 </body>
 </html>

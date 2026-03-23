@@ -2,7 +2,12 @@ import { renderToReadableStream } from "react-dom/server";
 import homepage from "./index.html";
 
 function Component(props: { message: string }) {
-  return <div><h1>{props.message}</h1></div>;
+  return (
+    <section>
+      <h2>{props.message}</h2>
+      <p>This fragment was rendered on the server and swapped into #output.</p>
+    </section>
+  );
 }
 
 Bun.serve({
