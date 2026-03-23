@@ -23,9 +23,15 @@ function TodoList(props: { todos: TodoRow[] }) {
               <td>
                 <ShortDisplay todo={todo} />
               </td>
-              <td>{todo.due_date}</td>
-              <td>{todo.cost_of_delay}</td>
-              <td>{todo.effort}</td>
+              <td>
+                {todo.due_date}
+              </td>
+              <td>
+                {todo.cost_of_delay}
+              </td>
+              <td>
+                {todo.effort}
+              </td>
             </tr>
           ))}
         </tbody>
