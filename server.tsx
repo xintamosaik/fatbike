@@ -106,9 +106,6 @@ function appErrorResponse(error: AppError): Response {
   }
 }
 
-const editShortPattern = new URLPattern({ pathname: "/todos/:id/edit/short" });
-const updateShortPattern = new URLPattern({ pathname: "/todos/:id/update/short" });
-
 async function handleTodosList(): Promise<Response> {
   const todosResult = await getTodos();
   if (!todosResult.ok) {
@@ -160,43 +157,40 @@ function parseTodoId(rawId: string | undefined): number | null {
 
   return id;
 }
-
-async function handlePostTodosRoutes(request: Request, url: URL): Promise<Response> {
-  const editMatch = editShortPattern.exec(url);
-  if (editMatch) {
-    const id = parseTodoId(editMatch.pathname.groups["id"]);
-    if (id === null) {
-      return new Response("Not Found", { status: 404 });
-    }
-
-    return handleTodoEditShort(id);
-  }
-
-  const updateMatch = updateShortPattern.exec(url);
-  if (updateMatch) {
-    const id = parseTodoId(updateMatch.pathname.groups["id"]);
-    if (id === null) {
-      return new Response("Not Found", { status: 404 });
-    }
-
-    return handleTodoUpdateShort(request, id);
-  }
-
-  return new Response("Not Found", { status: 404 });
-}
-
-Bun.serve({
+const server = Bun.serve({
   routes: {
     "/": homepage,
-    "/todos/list": handleTodosList,
+    "/todos/list": {
+      GET: handleTodosList,
+    },
+    "/todos/:id/edit/short": {
+      POST: (request) => {
+        const id = parseTodoId(request.params.id);
+        if (id === null) {
+          return new Response("Not Found", { status: 404 });
+        }
+
+        return handleTodoEditShort(id);
+      },
+    },
+    "/todos/:id/update/short": {
+      POST: (request) => {
+        const id = parseTodoId(request.params.id);
+        if (id === null) {
+          return new Response("Not Found", { status: 404 });
+        }
+
+        return handleTodoUpdateShort(request, id);
+      },
+    },
   },
-  fetch: async (request) => {
-    const url = new URL(request.url);
-
-    if (request.method === "POST") {
-      return handlePostTodosRoutes(request, url);
-    }
-
+  fetch: () => {
     return new Response("Not Found", { status: 404 });
   },
+  error: (error) => {
+    console.error(error);
+    return new Response("Internal Server Error", { status: 500 });
+  },
 });
+
+console.log(`Server running at ${server.url}`);
