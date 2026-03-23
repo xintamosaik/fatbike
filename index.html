@@ -13,9 +13,7 @@
     <script>
         fetch("/hello").then(res => res.text()).then(text => {
             document.body.innerHTML = text;
-        }).catch(err => {
-            document.body.innerText = "Error fetching data: " + err;
-        });
+        }) 
     </script>
 </body>
 </html>
