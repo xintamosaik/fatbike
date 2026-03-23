@@ -1,6 +1,6 @@
 {
   "name": "fatbike",
-  "module": "index.ts",
+  "module": "server.tsx",
   "type": "module",
   "private": true,
   "devDependencies": {
