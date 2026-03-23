@@ -1,12 +1,4 @@
 
-type Todo = {
-  id: number;
-  short: string;
-  dueDate: string;
-  costOfDelay: number;
-  effort: number;
-};
-
 type TodoRow = {
   id: number;
   short: string;
@@ -15,4 +7,4 @@ type TodoRow = {
   effort: number;
 };
 
-export type { Todo, TodoRow };
+export type { TodoRow };
