@@ -1,7 +1,7 @@
 import { getTodos } from "./pg";
 import type { TodoRow } from "./types";
 import { appErrorResponse, htmlResponse } from "./response";
-import { ShortDisplay } from "./todos-short";
+import { ShortDisplay } from "./short";
 
 function TodoList(props: { todos: TodoRow[] }) {
   return (

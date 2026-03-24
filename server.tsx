@@ -1,8 +1,8 @@
 import homepage from "./index.html";
 
-import { handleTodosList } from "./todos-list";
-import { handleTodoEditShort, handleTodoUpdateShort } from "./todos-short";
-
+import { handleTodosList } from "./list";
+import { handleTodoUpdateShort } from "./short-update";
+import { handleTodoEditShort  } from "./short-edit";
 function parseTodoId(rawId: string | undefined): number | null {
   if (!rawId) {
     return null;
