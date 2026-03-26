@@ -1,4 +1,4 @@
-import { getTodo } from "./pg";
+import { getTodo } from "./persistence";
 import type { TodoRow } from "./types";
 import { appErrorResponse, htmlResponse, } from "./response";
 

@@ -1,4 +1,4 @@
-import { getTodos } from "./pg";
+import { getTodos } from "./persistence";
 import type { TodoRow } from "./types";
 import { appErrorResponse, htmlResponse } from "./response";
 import { ShortDisplay } from "./short";
