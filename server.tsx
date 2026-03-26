@@ -3,6 +3,7 @@ import homepage from "./index.html";
 import { handleTodosList } from "./list";
 import { handleTodoUpdateShort } from "./short-update";
 import { handleTodoEditShort  } from "./short-edit";
+
 function parseTodoId(rawId: string | undefined): number | null {
   if (!rawId) {
     return null;
@@ -15,6 +16,7 @@ function parseTodoId(rawId: string | undefined): number | null {
 
   return id;
 }
+
 const server = Bun.serve({
   routes: {
     "/": homepage,
