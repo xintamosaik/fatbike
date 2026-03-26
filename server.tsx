@@ -25,7 +25,7 @@ const server = Bun.serve({
       GET: handleTodosList,
     },
     "/todos/new": {
-      POST: handleTodoCreate(),
+      POST: handleTodoCreate,
     },
     "/todos/:id/edit/short": {
       POST: (request) => {

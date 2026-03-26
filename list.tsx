@@ -19,11 +19,11 @@ function TodoList(props: { todos: TodoRow[] }) {
         </thead>
         <tbody>
           <tr>
-            <th>
-              <a fx-action="/todos/new" fx-target="#output" fx-method="POST" fx-swap="outerHTML">
+            <td colSpan={4}>
+              <a href="/todos/new" fx-action="/todos/new" fx-target="#output" fx-method="POST" fx-swap="outerHTML">
                 + New Todo
               </a>   
-            </th>
+            </td>
           </tr>
           {props.todos.map((todo) => (
             <tr key={todo.id}>
