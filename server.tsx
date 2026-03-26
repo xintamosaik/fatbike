@@ -1,6 +1,7 @@
 import homepage from "./index.html";
 
 import { handleTodosList } from "./list";
+import { handleTodoCreate } from "./todo-create";
 import { handleTodoUpdateShort } from "./short-update";
 import { handleTodoEditShort  } from "./short-edit";
 
@@ -22,6 +23,9 @@ const server = Bun.serve({
     "/": homepage,
     "/todos/list": {
       GET: handleTodosList,
+    },
+    "/todos/new": {
+      POST: handleTodoCreate(),
     },
     "/todos/:id/edit/short": {
       POST: (request) => {

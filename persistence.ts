@@ -12,6 +12,29 @@ async function writeTodos(todos: TodoRow[]): Promise<void> {
   await Bun.write(file, JSON.stringify(todos, null, 2));
 }
 
+async function createTodo(): Promise<Result<TodoRow[], AppError>> {
+  try {
+    const todos = await readTodos();
+    const newTodo: TodoRow = {
+      id: todos.length > 0 ? Math.max(...todos.map((t) => t.id)) + 1 : 1,
+      short: "",
+      due_date: "",
+      cost_of_delay: 0,
+      effort: "mins",
+    };
+
+    todos.push(newTodo);
+    await writeTodos(todos);
+    return { ok: true, value: todos };
+  } catch {
+    return {
+      ok: false,
+      error: { kind: "internal", message: "Failed to create todo." },
+    };
+  }
+}
+
+
 async function getTodos(): Promise<Result<TodoRow[], AppError>> {
   try {
     const todos = await readTodos();
@@ -44,7 +67,6 @@ async function getTodo(id: number): Promise<Result<TodoRow, AppError>> {
     };
   }
 }
-
 
 async function updateTodoShort(
   id: number,
@@ -79,4 +101,4 @@ async function updateTodoShort(
 }
 
 
-export { getTodos, getTodo, updateTodoShort };
+export { getTodos, getTodo, updateTodoShort, createTodo };

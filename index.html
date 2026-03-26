@@ -9,12 +9,12 @@
         crossorigin="anonymous"
         integrity="sha256-Qalmv6iqaAnrglOx2AWSoLfJFmXLGtjAIdBgsLc3bgg="></script>
 </head>
-<body>
-    <main>
-        <h1>fatbike</h1>
-        <p>Shell is loaded. Click to fetch server-rendered todos.</p>
-        <button fx-action="/todos/list" fx-target="#output" fx-swap="innerHTML">Load Todos</button>
-        <div id="output">No fragment loaded yet.</div>
-    </main>
+<body id="output">
+    <script>
+        (async function init(){
+            const response = await fetch('/todos/list')
+            document.body.innerHTML = await response.text()
+        })()
+    </script>
 </body>
 </html>

@@ -18,6 +18,13 @@ function TodoList(props: { todos: TodoRow[] }) {
           </tr>
         </thead>
         <tbody>
+          <tr>
+            <th>
+              <a fx-action="/todos/new" fx-target="#output" fx-method="POST" fx-swap="outerHTML">
+                + New Todo
+              </a>   
+            </th>
+          </tr>
           {props.todos.map((todo) => (
             <tr key={todo.id}>
               <td>
@@ -49,4 +56,4 @@ async function handleTodosList(): Promise<Response> {
   return htmlResponse(<TodoList todos={todosResult.value} />);
 }
 
-export { handleTodosList };
+export { handleTodosList, TodoList };
