@@ -37,13 +37,12 @@ async function createTodo(): Promise<Result<TodoRow[], AppError>> {
 
 async function getTodos(): Promise<Result<TodoRow[], AppError>> {
   try {
-    const todos = await readTodos();
+    const contents = Bun.file(file);
+    const todos = await contents.json();
     return { ok: true, value: todos };
-  } catch {
-    return {
-      ok: false,
-      error: { kind: "internal", message: "Failed to load todos." },
-    };
+  } catch (err) {
+    // fallback to empty list
+    return { ok: true, value: [] };
   }
 }
 
