@@ -1,5 +1,5 @@
 import { createTodo } from "./persistence";
-import { TodoList } from "./list";
+import TodoList from "./table";
 import { appErrorResponse, htmlResponse } from "./response";
 
 async function handleTodoCreate(): Promise<Response> {
