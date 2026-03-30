@@ -34,7 +34,6 @@ async function createTodo(): Promise<Result<TodoRow[], AppError>> {
   }
 }
 
-
 async function getTodos(): Promise<Result<TodoRow[], AppError>> {
   try {
     const contents = Bun.file(file);
