@@ -11,4 +11,4 @@ function ShortDisplay(props: { todo: TodoRow }) {
   );
 }
 
-export { ShortDisplay };
+export default ShortDisplay;

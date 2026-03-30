@@ -33,4 +33,4 @@ async function handleTodoEditShort(id: number): Promise<Response> {
   return htmlResponse(<ShortEditor todo={todoResult.value} />);
 }
 
-export { handleTodoEditShort };
+export default handleTodoEditShort;

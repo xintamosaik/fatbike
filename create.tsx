@@ -1,6 +1,7 @@
 import { createTodo } from "./persistence";
 import { TodoList } from "./list";
 import { appErrorResponse, htmlResponse } from "./response";
+
 async function handleTodoCreate(): Promise<Response> {
     const createResult = await createTodo();
     if (!createResult.ok) {
@@ -10,5 +11,5 @@ async function handleTodoCreate(): Promise<Response> {
     return htmlResponse(<TodoList todos={createResult.value} />);
 }
 
-export { handleTodoCreate };
+export default handleTodoCreate;
  

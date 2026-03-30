@@ -1,7 +1,7 @@
 import { getTodos } from "./persistence";
 import type { TodoRow } from "./types";
 import { appErrorResponse, htmlResponse } from "./response";
-import { ShortDisplay } from "./short";
+import ShortDisplay from "./short";
 
 function TodoList(props: { todos: TodoRow[] }) {
   return (
@@ -56,4 +56,4 @@ async function handleTodosList(): Promise<Response> {
   return htmlResponse(<TodoList todos={todosResult.value} />);
 }
 
-export { handleTodosList, TodoList };
+export default handleTodosList;

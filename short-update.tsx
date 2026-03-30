@@ -1,7 +1,7 @@
 import { updateTodoShort } from "./persistence";
 import { appErrorResponse, htmlResponse, } from "./response";
 
-import { ShortDisplay } from "./short";
+import ShortDisplay from "./short";
 
 
 async function handleTodoUpdateShort(
@@ -25,4 +25,4 @@ async function handleTodoUpdateShort(
   return htmlResponse(<ShortDisplay todo={updatedResult.value} />);
 }
 
-export { handleTodoUpdateShort };
+export default handleTodoUpdateShort;

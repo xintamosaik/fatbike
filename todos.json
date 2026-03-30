@@ -43,7 +43,7 @@
   },
   {
     "id": 7,
-    "short": "",
+    "short": "Add something",
     "due_date": "",
     "cost_of_delay": 0,
     "effort": "mins"
@@ -64,6 +64,13 @@
   },
   {
     "id": 10,
+    "short": "",
+    "due_date": "",
+    "cost_of_delay": 0,
+    "effort": "mins"
+  },
+  {
+    "id": 11,
     "short": "",
     "due_date": "",
     "cost_of_delay": 0,
