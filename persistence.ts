@@ -2,6 +2,7 @@ import type { AppError, Result } from "./error";
 import type { TodoRow } from "./types";
 import type {
   TodoCreatedEvent,
+  TodoCostOfDelayUpdatedEvent,
   TodoDueDateUpdatedEvent,
   TodoEffortUpdatedEvent,
   TodoShortUpdatedEvent,
@@ -324,6 +325,72 @@ async function updateTodoEffort(
   }
 }
 
+/**
+ * Updates the `cost_of_delay` field of a todo by appending a
+ * `todo_cost_of_delay_updated` event and applying it to the current projection.
+ *
+ * If the value is unchanged, no event is written and the current todo is
+ * returned as-is.
+ */
+async function updateTodoCostOfDelay(
+  id: number,
+  costOfDelay: TodoRow["cost_of_delay"],
+): Promise<Result<TodoRow, AppError>> {
+  const initResult = await initializeStore();
+  if (!initResult.ok) {
+    return initResult;
+  }
+
+  const existing = getTodoById(id);
+  if (!existing) {
+    return {
+      ok: false,
+      error: { kind: "not_found", message: "Todo not found." },
+    };
+  }
+
+  if (existing.cost_of_delay === costOfDelay) {
+    return { ok: true, value: existing };
+  }
+
+  try {
+    const event: TodoCostOfDelayUpdatedEvent = {
+      seq: getNextEventSeq(),
+      stream: "todo",
+      kind: "todo_cost_of_delay_updated",
+      entity_id: id,
+      at: new Date().toISOString(),
+      data: {
+        cost_of_delay: costOfDelay,
+      },
+    };
+
+    await appendEvent(event);
+    applyEvent(event);
+
+    const updated = getTodoById(id);
+    if (!updated) {
+      return {
+        ok: false,
+        error: {
+          kind: "internal",
+          message: "Failed to update cost of delay.",
+        },
+      };
+    }
+
+    return { ok: true, value: updated };
+  } catch {
+    return {
+      ok: false,
+      error: {
+        kind: "internal",
+        message: "Failed to update cost of delay.",
+      },
+    };
+  }
+}
+
 export {
   initializeStore,
   getTodos,
@@ -331,5 +398,6 @@ export {
   updateTodoShort,
   updateTodoDueDate,
   updateTodoEffort,
+  updateTodoCostOfDelay,
   createTodo,
 };

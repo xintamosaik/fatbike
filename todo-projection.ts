@@ -105,6 +105,22 @@ function applyEvent(event: TodoEvent): void {
             nextSeq = Math.max(nextSeq, event.seq + 1);
             return;
         }
+
+        case "todo_cost_of_delay_updated": {
+            const existing = byId.get(event.entity_id);
+            if (!existing) {
+                nextSeq = Math.max(nextSeq, event.seq + 1);
+                return;
+            }
+
+            byId.set(event.entity_id, {
+                ...existing,
+                cost_of_delay: event.data.cost_of_delay,
+            });
+
+            nextSeq = Math.max(nextSeq, event.seq + 1);
+            return;
+        }
     }
 
     const exhaustiveCheck: never = event;

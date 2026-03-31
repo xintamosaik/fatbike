@@ -7,6 +7,8 @@ import handleTodoEditDueDate from "./due-date-edit";
 import handleTodoUpdateDueDate from "./due-date-update";
 import handleTodoEditEffort from "./effort-edit";
 import handleTodoUpdateEffort from "./effort-update";
+import handleTodoEditCostOfDelay from "./cost-of-delay-edit";
+import handleTodoUpdateCostOfDelay from "./cost-of-delay-update";
 import { initializeStore } from "./persistence";
 
 /**
@@ -112,6 +114,26 @@ const server = Bun.serve({
         }
 
         return handleTodoUpdateEffort(request, id);
+      },
+    },
+    "/todos/:id/edit/cost-of-delay": {
+      POST: (request) => {
+        const id = parseTodoId(request.params.id);
+        if (id === null) {
+          return new Response("Not Found", { status: 404 });
+        }
+
+        return handleTodoEditCostOfDelay(id);
+      },
+    },
+    "/todos/:id/update/cost-of-delay": {
+      POST: (request) => {
+        const id = parseTodoId(request.params.id);
+        if (id === null) {
+          return new Response("Not Found", { status: 404 });
+        }
+
+        return handleTodoUpdateCostOfDelay(request, id);
       },
     },
   },
