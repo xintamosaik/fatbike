@@ -190,7 +190,16 @@ async function createTodo(): Promise<Result<TodoRow, AppError>> {
     await appendEvent(event);
     applyEvent(event);
 
-    return { ok: true, value: { ...event.data, id: event.entity_id } };
+    const created = byId.get(event.entity_id);
+    if (!created) {
+      return {
+        ok: false,
+        error: { kind: "internal", message: "Failed to create todo." },
+      };
+    }
+
+    return { ok: true, value: created };
+
   } catch {
     return {
       ok: false,
