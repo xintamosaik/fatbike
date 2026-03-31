@@ -1,147 +1,19 @@
 import type { AppError, Result } from "./error";
 import type { TodoRow } from "./types";
-import { appendFile } from "node:fs/promises";
+import type { TodoCreatedEvent, TodoShortUpdatedEvent } from "./todo-events";
 
-const eventsFile = "events.todo.jsonl";
-
-type TodoCreatedData = {
-  short: string;
-  due_date: string;
-  cost_of_delay: -2 | -1 | 0 | 1 | 2;
-  effort: "mins" | "hours" | "days" | "weeks" | "months";
-};
-
-type TodoShortUpdatedData = {
-  short: string;
-};
-
-type TodoCreatedEvent = {
-  seq: number;
-  stream: "todo";
-  kind: "todo_created";
-  entity_id: number;
-  at: string;
-  data: TodoCreatedData;
-};
-
-type TodoShortUpdatedEvent = {
-  seq: number;
-  stream: "todo";
-  kind: "todo_short_updated";
-  entity_id: number;
-  at: string;
-  data: TodoShortUpdatedData;
-};
-
-type TodoEvent = TodoCreatedEvent | TodoShortUpdatedEvent;
-
-const byId = new Map<number, TodoRow>();
-const orderedIds: number[] = [];
-
-let nextId = 1;
-let nextSeq = 1;
+import { appendEvent } from "./todo-store";
+import {
+  applyEvent,
+  getAllTodos,
+  getNextEventSeq,
+  getNextTodoId,
+  getTodoById,
+  replayEventsFromDisk,
+} from "./todo-projection";
 
 let isInitialized = false;
 let initPromise: Promise<void> | null = null;
-let writeQueue: Promise<void> = Promise.resolve();
-
-function cloneTodos(): TodoRow[] {
-  return orderedIds
-    .map((id) => byId.get(id))
-    .filter((todo): todo is TodoRow => Boolean(todo));
-}
-
-function applyEvent(event: TodoEvent): void {
-  switch (event.kind) {
-    case "todo_created": {
-      const row: TodoRow = {
-        id: event.entity_id,
-        short: event.data.short,
-        due_date: event.data.due_date,
-        cost_of_delay: event.data.cost_of_delay,
-        effort: event.data.effort,
-      };
-
-      const alreadyExists = byId.has(event.entity_id);
-      byId.set(event.entity_id, row);
-
-      if (!alreadyExists) {
-        orderedIds.push(event.entity_id);
-        orderedIds.sort((a, b) => a - b);
-      }
-
-      nextId = Math.max(nextId, event.entity_id + 1);
-      nextSeq = Math.max(nextSeq, event.seq + 1);
-      return;
-    }
-
-    case "todo_short_updated": {
-      const existing = byId.get(event.entity_id);
-      if (!existing) {
-        nextSeq = Math.max(nextSeq, event.seq + 1);
-        return;
-      }
-
-      byId.set(event.entity_id, {
-        ...existing,
-        short: event.data.short,
-      });
-
-      nextSeq = Math.max(nextSeq, event.seq + 1);
-      return;
-    }
-  }
-
-  const exhaustiveCheck: never = event;
-  throw new Error(`Unhandled event: ${JSON.stringify(exhaustiveCheck)}`);
-}
-
-function appendEvent(event: TodoEvent): Promise<void> {
-  const line = `${JSON.stringify(event)}\n`;
-  writeQueue = writeQueue.then(() => appendFile(eventsFile, line, "utf8"));
-  return writeQueue;
-}
-
-async function readEventsFromFile(path: string): Promise<TodoEvent[]> {
-  const file = Bun.file(path);
-
-  if (!(await file.exists())) {
-    return [];
-  }
-
-  const text = await file.text();
-  if (!text.trim()) {
-    return [];
-  }
-
-  const events: TodoEvent[] = [];
-  const lines = text.split("\n");
-
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed) {
-      continue;
-    }
-
-    const parsed = JSON.parse(trimmed) as TodoEvent;
-    events.push(parsed);
-  }
-
-  return events;
-}
-
-function byEventSequence(a: TodoEvent, b: TodoEvent): number {
-  return a.seq - b.seq;
-}
-
-async function replayEventsFromDisk(): Promise<void> {
-  const events = await readEventsFromFile(eventsFile);
-  events.sort(byEventSequence);
-
-  for (const event of events) {
-    applyEvent(event);
-  }
-}
 
 async function initializeStore(): Promise<Result<void, AppError>> {
   try {
@@ -174,10 +46,10 @@ async function createTodo(): Promise<Result<TodoRow, AppError>> {
 
   try {
     const event: TodoCreatedEvent = {
-      seq: nextSeq,
+      seq: getNextEventSeq(),
       stream: "todo",
       kind: "todo_created",
-      entity_id: nextId,
+      entity_id: getNextTodoId(),
       at: new Date().toISOString(),
       data: {
         short: "",
@@ -190,7 +62,7 @@ async function createTodo(): Promise<Result<TodoRow, AppError>> {
     await appendEvent(event);
     applyEvent(event);
 
-    const created = byId.get(event.entity_id);
+    const created = getTodoById(event.entity_id);
     if (!created) {
       return {
         ok: false,
@@ -214,7 +86,7 @@ async function getTodos(): Promise<Result<TodoRow[], AppError>> {
     return initResult;
   }
 
-  return { ok: true, value: cloneTodos() };
+  return { ok: true, value: getAllTodos() };
 }
 
 async function getTodo(id: number): Promise<Result<TodoRow, AppError>> {
@@ -223,7 +95,7 @@ async function getTodo(id: number): Promise<Result<TodoRow, AppError>> {
     return initResult;
   }
 
-  const todo = byId.get(id);
+  const todo = getTodoById(id);
   if (!todo) {
     return {
       ok: false,
@@ -243,7 +115,7 @@ async function updateTodoShort(
     return initResult;
   }
 
-  const existing = byId.get(id);
+  const existing = getTodoById(id);
   if (!existing) {
     return {
       ok: false,
@@ -257,7 +129,7 @@ async function updateTodoShort(
   
   try {
     const event: TodoShortUpdatedEvent = {
-      seq: nextSeq,
+      seq: getNextEventSeq(),
       stream: "todo",
       kind: "todo_short_updated",
       entity_id: id,
@@ -270,7 +142,15 @@ async function updateTodoShort(
     await appendEvent(event);
     applyEvent(event);
 
-    return { ok: true, value: byId.get(id)! };
+    const updated = getTodoById(id);
+    if (!updated) {
+      return {
+        ok: false,
+        error: { kind: "internal", message: "Failed to update todo." },
+      };
+    }
+
+    return { ok: true, value: updated };
   } catch {
     return {
       ok: false,
