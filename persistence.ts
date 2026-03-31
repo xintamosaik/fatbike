@@ -15,6 +15,25 @@ import {
 let isInitialized = false;
 let initPromise: Promise<void> | null = null;
 
+/**
+ * App-facing persistence API for todos.
+ *
+ * Architectural role:
+ * - exposes the storage operations the rest of the app is allowed to use
+ * - hides event-log storage details from handlers
+ * - coordinates append + projection update for writes
+ *
+ * This file is intentionally thin:
+ * - event shapes live in `todo-events.ts`
+ * - raw event-log IO lives in `todo-store.ts`
+ * - in-memory read model / replay logic lives in `todo-projection.ts`
+ */
+
+/**
+ * Ensures the in-memory projection has been rebuilt from the event log.
+ *
+ * Safe to call multiple times. Replay only happens once per process.
+ */
 async function initializeStore(): Promise<Result<void, AppError>> {
   try {
     if (isInitialized) {
@@ -38,6 +57,12 @@ async function initializeStore(): Promise<Result<void, AppError>> {
   }
 }
 
+/**
+ * Creates a new todo by appending a `todo_created` event and applying it to
+ * the current in-memory projection.
+ *
+ * Returns the projected current state of the created todo.
+ */
 async function createTodo(): Promise<Result<TodoRow, AppError>> {
   const initResult = await initializeStore();
   if (!initResult.ok) {
@@ -80,6 +105,11 @@ async function createTodo(): Promise<Result<TodoRow, AppError>> {
   }
 }
 
+/**
+ * Returns all todos from the current projection.
+ *
+ * This is a read-model operation: it returns current state, not event history.
+ */
 async function getTodos(): Promise<Result<TodoRow[], AppError>> {
   const initResult = await initializeStore();
   if (!initResult.ok) {
@@ -89,6 +119,9 @@ async function getTodos(): Promise<Result<TodoRow[], AppError>> {
   return { ok: true, value: getAllTodos() };
 }
 
+/**
+ * Returns one todo from the current projection by id.
+ */
 async function getTodo(id: number): Promise<Result<TodoRow, AppError>> {
   const initResult = await initializeStore();
   if (!initResult.ok) {
@@ -106,6 +139,13 @@ async function getTodo(id: number): Promise<Result<TodoRow, AppError>> {
   return { ok: true, value: todo };
 }
 
+/**
+ * Updates the `short` field of a todo by appending a `todo_short_updated`
+ * event and applying it to the current projection.
+ *
+ * If the value is unchanged, no event is written and the current todo is
+ * returned as-is.
+ */
 async function updateTodoShort(
   id: number,
   short: string,
@@ -126,7 +166,7 @@ async function updateTodoShort(
   if (existing.short === short) {
     return { ok: true, value: existing };
   }
-  
+
   try {
     const event: TodoShortUpdatedEvent = {
       seq: getNextEventSeq(),

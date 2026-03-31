@@ -1,3 +1,8 @@
+/**
+ * Read-model types used by UI and app-facing persistence reads.
+ *
+ * `TodoRow` represents current projected state, not an event payload.
+ */
 type TodoRow = {
   id: number;
   short: string;

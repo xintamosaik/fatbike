@@ -1,6 +1,20 @@
 import type { TodoRow } from "./types";
-
 import ShortDisplay from "./short";
+
+/**
+ * Table fragments for todo list rendering.
+ *
+ * Architectural role:
+ * - define reusable HTML fragments for the list read model
+ * - keep handlers free from table markup
+ */
+
+/**
+ * Renders a single todo row.
+ *
+ * This fragment is used both when rendering the full list and when appending
+ * one newly created todo to the existing table body.
+ */
 function TodoRowDisplay(props: { todo: TodoRow }) {
   return (
     <tr>
@@ -20,6 +34,12 @@ function TodoRowDisplay(props: { todo: TodoRow }) {
   );
 }
 
+/**
+ * Renders the full todo table.
+ *
+ * The table body is also a swap target for row-level updates such as
+ * appending newly created todos.
+ */
 function TodoList(props: { todos: TodoRow[] }) {
   return (
     <section>
@@ -39,7 +59,7 @@ function TodoList(props: { todos: TodoRow[] }) {
             <td colSpan={4}>
               <a href="/todos/new" fx-action="/todos/new" fx-target="#todos-list" fx-method="POST" fx-swap="beforeend">
                 + New Todo
-              </a>   
+              </a>
             </td>
           </tr>
           {props.todos.map((todo) => (
@@ -51,5 +71,5 @@ function TodoList(props: { todos: TodoRow[] }) {
   );
 }
 
-       
+
 export { TodoList, TodoRowDisplay };

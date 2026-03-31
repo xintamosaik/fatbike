@@ -5,6 +5,22 @@ import handleTodoUpdateShort from "./short-update";
 import handleTodoEditShort from "./short-edit";
 import { initializeStore } from "./persistence";
 
+/**
+ * HTTP entry point.
+ *
+ * Architectural role:
+ * - defines route-to-handler wiring
+ * - performs route-level parameter parsing
+ * - initializes the store on process startup
+ *
+ * Business and persistence logic should stay out of this file.
+ */
+
+/**
+ * Parses and validates a todo id from a route parameter.
+ *
+ * Returns `null` when the parameter is missing or invalid.
+ */
 function parseTodoId(rawId: string | undefined): number | null {
   if (!rawId) {
     return null;
