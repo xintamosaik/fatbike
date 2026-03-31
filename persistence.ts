@@ -24,11 +24,6 @@ type TodoShortUpdatedEvent = {
 
 type TodoEvent = TodoCreatedEvent | TodoShortUpdatedEvent;
 
-const eventFileByKind: Record<TodoEvent["kind"], string> = {
-  todo_created: todoCreatedEventsFile,
-  todo_short_updated: todoShortUpdatedEventsFile,
-};
-
 const byId = new Map<number, TodoRow>();
 const orderedIds: number[] = [];
 let nextId = 1;
@@ -44,24 +39,21 @@ function cloneTodos(): TodoRow[] {
 }
 
 function applyCreateEvent(event: TodoCreatedEvent): void {
-  
-    const row: TodoRow = {
-      id: event.id,
-      short: event.short,
-      due_date: event.due_date,
-      cost_of_delay: event.cost_of_delay,
-      effort: event.effort,
-    };
+  const row: TodoRow = {
+    id: event.id,
+    short: event.short,
+    due_date: event.due_date,
+    cost_of_delay: event.cost_of_delay,
+    effort: event.effort,
+  };
 
-    const alreadyExists = byId.has(event.id);
-    byId.set(event.id, row);
-    if (!alreadyExists) {
-      orderedIds.push(event.id);
-      orderedIds.sort((a, b) => a - b);
-    }
-    nextId = Math.max(nextId, event.id + 1);
-    return;
-  
+  const alreadyExists = byId.has(event.id);
+  byId.set(event.id, row);
+  if (!alreadyExists) {
+    orderedIds.push(event.id);
+    orderedIds.sort((a, b) => a - b);
+  }
+  nextId = Math.max(nextId, event.id + 1);
 }
 function applyShortUpdatedEvent(event: TodoShortUpdatedEvent): void {
   
@@ -73,13 +65,17 @@ function applyShortUpdatedEvent(event: TodoShortUpdatedEvent): void {
   byId.set(event.id, { ...existing, short: event.short });
 }
 
-function appendEvent(event: TodoEvent): Promise<void> {
+function appendCreateEvent(event: TodoCreatedEvent): Promise<void> {
   const { kind: _kind, ...payload } = event;
   const line = `${JSON.stringify(payload)}\n`;
-  const targetFile = eventFileByKind[event.kind];
-  writeQueue = writeQueue.then(async () => {
-    await appendFile(targetFile, line, "utf8");
-  });
+  writeQueue = writeQueue.then(() => appendFile(todoCreatedEventsFile, line, "utf8"));
+  return writeQueue;
+}
+
+function appendShortUpdatedEvent(event: TodoShortUpdatedEvent): Promise<void> {
+  const { kind: _kind, ...payload } = event;
+  const line = `${JSON.stringify(payload)}\n`;
+  writeQueue = writeQueue.then(() => appendFile(todoShortUpdatedEventsFile, line, "utf8"));
   return writeQueue;
 }
 
@@ -165,16 +161,10 @@ async function replayEventsFromDisk(): Promise<void> {
       readShortUpdatedEventsFromFile(todoShortUpdatedEventsFile),
     ]);
 
-  const createdEvents = [
-    ...created,
-  ].sort(byEventTimestamp);
-  for (const event of createdEvents) {
+  for (const event of created.sort(byEventTimestamp)) {
     applyCreateEvent(event);
-  }  
-  const shortUpdatedEvents = [
-    ...shortUpdated,
-  ].sort(byEventTimestamp);
-  for (const event of shortUpdatedEvents) {
+  }
+  for (const event of shortUpdated.sort(byEventTimestamp)) {
     applyShortUpdatedEvent(event);
   }
 }
@@ -219,7 +209,7 @@ async function createTodo(): Promise<Result<TodoRow[], AppError>> {
       at: new Date().toISOString(),
     };
 
-    await appendEvent(event);
+    await appendCreateEvent(event);
     applyCreateEvent(event);
 
     return { ok: true, value: cloneTodos() };
@@ -282,7 +272,7 @@ async function updateTodoShort(
       at: new Date().toISOString(),
     };
 
-    await appendEvent(event);
+    await appendShortUpdatedEvent(event);
     applyShortUpdatedEvent(event);
 
     return { ok: true, value: byId.get(id)! };
