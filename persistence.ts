@@ -251,6 +251,10 @@ async function updateTodoShort(
     };
   }
 
+  if (existing.short === short) {
+    return { ok: true, value: existing };
+  }
+  
   try {
     const event: TodoShortUpdatedEvent = {
       seq: nextSeq,
