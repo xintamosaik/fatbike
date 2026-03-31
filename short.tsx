@@ -6,9 +6,10 @@ import type { TodoRow } from "./types";
  * Clicking the field swaps this display fragment for its edit fragment.
  */
 function ShortDisplay(props: { todo: TodoRow }) {
+  const link = `/todos/${props.todo.id}/edit/short`;
   return (
-    <a href={`/todos/${props.todo.id}/edit/short`}
-      fx-action={`/todos/${props.todo.id}/edit/short`}
+    <a href={link}
+      fx-action={link}
       fx-method="POST"
       fx-swap="outerHTML"
     >
