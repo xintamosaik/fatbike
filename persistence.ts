@@ -2,7 +2,9 @@ import type { AppError, Result } from "./error";
 import type { TodoRow } from "./types";
 import { appendFile } from "node:fs/promises";
 
-const eventsFile = "todos.events.jsonl";
+const legacyEventsFile = "todos.events.jsonl";
+const todoCreatedEventsFile = "todos.created.events.jsonl";
+const todoShortUpdatedEventsFile = "todos.short-updated.events.jsonl";
 const legacySnapshotFile = "todos.json";
 
 type TodoCreatedEvent = {
@@ -23,6 +25,11 @@ type TodoShortUpdatedEvent = {
 };
 
 type TodoEvent = TodoCreatedEvent | TodoShortUpdatedEvent;
+
+const eventFileByKind: Record<TodoEvent["kind"], string> = {
+  todo_created: todoCreatedEventsFile,
+  todo_short_updated: todoShortUpdatedEventsFile,
+};
 
 const byId = new Map<number, TodoRow>();
 const orderedIds: number[] = [];
@@ -68,23 +75,25 @@ function applyEvent(event: TodoEvent): void {
 
 function appendEvent(event: TodoEvent): Promise<void> {
   const line = `${JSON.stringify(event)}\n`;
+  const targetFile = eventFileByKind[event.kind];
   writeQueue = writeQueue.then(async () => {
-    await appendFile(eventsFile, line, "utf8");
+    await appendFile(targetFile, line, "utf8");
   });
   return writeQueue;
 }
 
-async function replayEventsFromDisk(): Promise<void> {
-  const file = Bun.file(eventsFile);
+async function readEventsFromFile(path: string): Promise<TodoEvent[]> {
+  const file = Bun.file(path);
   if (!(await file.exists())) {
-    return;
+    return [];
   }
 
   const text = await file.text();
   if (!text.trim()) {
-    return;
+    return [];
   }
 
+  const events: TodoEvent[] = [];
   const lines = text.split("\n");
   for (const line of lines) {
     const trimmed = line.trim();
@@ -93,7 +102,33 @@ async function replayEventsFromDisk(): Promise<void> {
     }
 
     const parsed = JSON.parse(trimmed) as TodoEvent;
-    applyEvent(parsed);
+    events.push(parsed);
+  }
+
+  return events;
+}
+
+function byEventTimestamp(a: TodoEvent, b: TodoEvent): number {
+  const left = Date.parse(a.at);
+  const right = Date.parse(b.at);
+
+  if (!Number.isNaN(left) && !Number.isNaN(right)) {
+    return left - right;
+  }
+
+  return a.id - b.id;
+}
+
+async function replayEventsFromDisk(): Promise<void> {
+  const [created, shortUpdated, legacy] = await Promise.all([
+    readEventsFromFile(todoCreatedEventsFile),
+    readEventsFromFile(todoShortUpdatedEventsFile),
+    readEventsFromFile(legacyEventsFile),
+  ]);
+
+  const events = [...created, ...shortUpdated, ...legacy].sort(byEventTimestamp);
+  for (const event of events) {
+    applyEvent(event);
   }
 }
 

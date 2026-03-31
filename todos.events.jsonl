@@ -5,7 +5,6 @@
 {"kind":"todo_created","id":5,"short":"Filter or search (SSR)","due_date":"","cost_of_delay":0,"effort":"mins","at":"2026-03-30T18:39:23.778Z"}
 {"kind":"todo_created","id":6,"short":"more than asdf","due_date":"","cost_of_delay":0,"effort":"mins","at":"2026-03-30T18:39:23.778Z"}
 {"kind":"todo_created","id":7,"short":"Add something","due_date":"","cost_of_delay":0,"effort":"mins","at":"2026-03-30T18:39:23.779Z"}
-{"kind":"todo_created","id":8,"short":"","due_date":"","cost_of_delay":0,"effort":"mins","at":"2026-03-30T18:39:23.779Z"}
-{"kind":"todo_created","id":9,"short":"","due_date":"","cost_of_delay":0,"effort":"mins","at":"2026-03-30T18:39:23.780Z"}
-{"kind":"todo_created","id":10,"short":"","due_date":"","cost_of_delay":0,"effort":"mins","at":"2026-03-30T18:39:23.780Z"}
-{"kind":"todo_created","id":11,"short":"","due_date":"","cost_of_delay":0,"effort":"mins","at":"2026-03-30T18:39:23.780Z"}
+{"kind":"todo_short_updated","id":8,"short":"more than asdf 3","at":"2026-03-30T19:12:20.345Z"}
+{"kind":"todo_created","id":8,"short":"","due_date":"","cost_of_delay":0,"effort":"mins","at":"2026-03-30T19:28:47.398Z"}
+{"kind":"todo_short_updated","id":8,"short":"more than asdf","at":"2026-03-30T19:28:52.187Z"}
