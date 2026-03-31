@@ -1,6 +1,10 @@
 import type { AppError, Result } from "./error";
 import type { TodoRow } from "./types";
-import type { TodoCreatedEvent, TodoShortUpdatedEvent } from "./todo-events";
+import type {
+  TodoCreatedEvent,
+  TodoDueDateUpdatedEvent,
+  TodoShortUpdatedEvent,
+} from "./todo-events";
 
 import { appendEvent } from "./todo-store";
 import {
@@ -199,4 +203,71 @@ async function updateTodoShort(
   }
 }
 
-export { initializeStore, getTodos, getTodo, updateTodoShort, createTodo };
+/**
+ * Updates the `due_date` field of a todo by appending a
+ * `todo_due_date_updated` event and applying it to the current projection.
+ *
+ * If the value is unchanged, no event is written and the current todo is
+ * returned as-is.
+ */
+async function updateTodoDueDate(
+  id: number,
+  dueDate: string,
+): Promise<Result<TodoRow, AppError>> {
+  const initResult = await initializeStore();
+  if (!initResult.ok) {
+    return initResult;
+  }
+
+  const existing = getTodoById(id);
+  if (!existing) {
+    return {
+      ok: false,
+      error: { kind: "not_found", message: "Todo not found." },
+    };
+  }
+
+  if (existing.due_date === dueDate) {
+    return { ok: true, value: existing };
+  }
+
+  try {
+    const event: TodoDueDateUpdatedEvent = {
+      seq: getNextEventSeq(),
+      stream: "todo",
+      kind: "todo_due_date_updated",
+      entity_id: id,
+      at: new Date().toISOString(),
+      data: {
+        due_date: dueDate,
+      },
+    };
+
+    await appendEvent(event);
+    applyEvent(event);
+
+    const updated = getTodoById(id);
+    if (!updated) {
+      return {
+        ok: false,
+        error: { kind: "internal", message: "Failed to update due date." },
+      };
+    }
+
+    return { ok: true, value: updated };
+  } catch {
+    return {
+      ok: false,
+      error: { kind: "internal", message: "Failed to update due date." },
+    };
+  }
+}
+
+export {
+  initializeStore,
+  getTodos,
+  getTodo,
+  updateTodoShort,
+  updateTodoDueDate,
+  createTodo,
+};

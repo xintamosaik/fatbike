@@ -3,6 +3,8 @@ import handleTodosList from "./list";
 import handleTodoCreate from "./create";
 import handleTodoUpdateShort from "./short-update";
 import handleTodoEditShort from "./short-edit";
+import handleTodoEditDueDate from "./due-date-edit";
+import handleTodoUpdateDueDate from "./due-date-update";
 import { initializeStore } from "./persistence";
 
 /**
@@ -68,6 +70,26 @@ const server = Bun.serve({
         }
 
         return handleTodoUpdateShort(request, id);
+      },
+    },
+    "/todos/:id/edit/due-date": {
+      POST: (request) => {
+        const id = parseTodoId(request.params.id);
+        if (id === null) {
+          return new Response("Not Found", { status: 404 });
+        }
+
+        return handleTodoEditDueDate(id);
+      },
+    },
+    "/todos/:id/update/due-date": {
+      POST: (request) => {
+        const id = parseTodoId(request.params.id);
+        if (id === null) {
+          return new Response("Not Found", { status: 404 });
+        }
+
+        return handleTodoUpdateDueDate(request, id);
       },
     },
   },

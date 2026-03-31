@@ -29,6 +29,14 @@ type TodoShortUpdatedData = {
 };
 
 /**
+ * The data shape for a `todo_due_date_updated` event data, which captures a
+ * change to the `due_date` field of a todo.
+ */
+type TodoDueDateUpdatedData = {
+    due_date: string;
+};
+
+/**
  * The shape of a `todo_created` event, which captures the creation of a new todo.
  */
 type TodoCreatedEvent = {
@@ -54,14 +62,29 @@ type TodoShortUpdatedEvent = {
 };
 
 /**
+ * The shape of a `todo_due_date_updated` event, which captures an update to
+ * the `due_date` field of an existing todo.
+ */
+type TodoDueDateUpdatedEvent = {
+    seq: number;
+    stream: "todo";
+    kind: "todo_due_date_updated";
+    entity_id: number;
+    at: string;
+    data: TodoDueDateUpdatedData;
+};
+
+/**
  * The union of all event shapes for the todo stream.
  */
-type TodoEvent = TodoCreatedEvent | TodoShortUpdatedEvent;
+type TodoEvent = TodoCreatedEvent | TodoShortUpdatedEvent | TodoDueDateUpdatedEvent;
 
 export type {
     TodoCreatedData,
     TodoShortUpdatedData,
+    TodoDueDateUpdatedData,
     TodoCreatedEvent,
     TodoShortUpdatedEvent,
+    TodoDueDateUpdatedEvent,
     TodoEvent,
 };
