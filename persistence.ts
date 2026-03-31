@@ -2,12 +2,8 @@ import type { AppError, Result } from "./error";
 import type { TodoRow } from "./types";
 import { appendFile } from "node:fs/promises";
 
-const legacyEventsFile = "todos.events.jsonl";
-const legacyTodoCreatedEventsFile = "todos.created.events.jsonl";
-const legacyTodoShortUpdatedEventsFile = "todos.short-updated.events.jsonl";
 const todoCreatedEventsFile = "events.todo.created.jsonl";
 const todoShortUpdatedEventsFile = "events.todo.short.updated.jsonl";
-const legacySnapshotFile = "todos.json";
 
 type TodoCreatedEvent = {
   kind: "todo_created";
@@ -47,8 +43,8 @@ function cloneTodos(): TodoRow[] {
     .filter((todo): todo is TodoRow => Boolean(todo));
 }
 
-function applyEvent(event: TodoEvent): void {
-  if (event.kind === "todo_created") {
+function applyCreateEvent(event: TodoCreatedEvent): void {
+  
     const row: TodoRow = {
       id: event.id,
       short: event.short,
@@ -65,8 +61,10 @@ function applyEvent(event: TodoEvent): void {
     }
     nextId = Math.max(nextId, event.id + 1);
     return;
-  }
-
+  
+}
+function applyShortUpdatedEvent(event: TodoShortUpdatedEvent): void {
+  
   const existing = byId.get(event.id);
   if (!existing) {
     return;
@@ -76,7 +74,8 @@ function applyEvent(event: TodoEvent): void {
 }
 
 function appendEvent(event: TodoEvent): Promise<void> {
-  const line = `${JSON.stringify(event)}\n`;
+  const { kind: _kind, ...payload } = event;
+  const line = `${JSON.stringify(payload)}\n`;
   const targetFile = eventFileByKind[event.kind];
   writeQueue = writeQueue.then(async () => {
     await appendFile(targetFile, line, "utf8");
@@ -84,10 +83,9 @@ function appendEvent(event: TodoEvent): Promise<void> {
   return writeQueue;
 }
 
-async function readEventsFromFile(
+async function readCreateEventsFromFile(
   path: string,
-  fallbackKind?: TodoEvent["kind"],
-): Promise<TodoEvent[]> {
+): Promise<TodoCreatedEvent[]> {
   const file = Bun.file(path);
   if (!(await file.exists())) {
     return [];
@@ -98,7 +96,7 @@ async function readEventsFromFile(
     return [];
   }
 
-  const events: TodoEvent[] = [];
+  const events: TodoCreatedEvent[] = [];
   const lines = text.split("\n");
   for (const line of lines) {
     const trimmed = line.trim();
@@ -106,22 +104,49 @@ async function readEventsFromFile(
       continue;
     }
 
-    const parsed = JSON.parse(trimmed) as Partial<TodoEvent> & {
+    const parsed = JSON.parse(trimmed) as Partial<TodoCreatedEvent> & {
       id: number;
       at: string;
     };
-
-    const kind = parsed.kind ?? fallbackKind;
-    if (!kind) {
-      continue;
-    }
-
-    events.push({ ...parsed, kind } as TodoEvent);
+ 
+    events.push({ ...parsed } as TodoCreatedEvent);
   }
 
   return events;
 }
+async function readShortUpdatedEventsFromFile(
+  path: string,
+): Promise<TodoShortUpdatedEvent[]> {
+  const file = Bun.file(path);
+  if (!(await file.exists())) {
+    return [];
+  }
 
+  const text = await file.text();
+  if (!text.trim()) {
+    return [];
+  }
+
+  const events: TodoShortUpdatedEvent[] = [];
+  const lines = text.split("\n");
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      continue;
+    }
+
+    const parsed = JSON.parse(trimmed) as Partial<TodoShortUpdatedEvent> & {
+      id: number;
+      at: string;
+    };
+
+
+
+    events.push({ ...parsed } as TodoShortUpdatedEvent);
+  }
+
+  return events;
+}
 function byEventTimestamp(a: TodoEvent, b: TodoEvent): number {
   const left = Date.parse(a.at);
   const right = Date.parse(b.at);
@@ -134,51 +159,23 @@ function byEventTimestamp(a: TodoEvent, b: TodoEvent): number {
 }
 
 async function replayEventsFromDisk(): Promise<void> {
-  const [created, createdLegacy, shortUpdated, shortUpdatedLegacy, legacy] =
+  const [created, shortUpdated] =
     await Promise.all([
-      readEventsFromFile(todoCreatedEventsFile, "todo_created"),
-      readEventsFromFile(legacyTodoCreatedEventsFile, "todo_created"),
-      readEventsFromFile(todoShortUpdatedEventsFile, "todo_short_updated"),
-      readEventsFromFile(legacyTodoShortUpdatedEventsFile, "todo_short_updated"),
-    readEventsFromFile(legacyEventsFile),
+      readCreateEventsFromFile(todoCreatedEventsFile),
+      readShortUpdatedEventsFromFile(todoShortUpdatedEventsFile),
     ]);
 
-  const events = [
+  const createdEvents = [
     ...created,
-    ...createdLegacy,
-    ...shortUpdated,
-    ...shortUpdatedLegacy,
-    ...legacy,
   ].sort(byEventTimestamp);
-  for (const event of events) {
-    applyEvent(event);
-  }
-}
-
-async function bootstrapFromLegacySnapshotIfNeeded(): Promise<void> {
-  if (orderedIds.length > 0) {
-    return;
-  }
-
-  const file = Bun.file(legacySnapshotFile);
-  if (!(await file.exists())) {
-    return;
-  }
-
-  const todos = (await file.json()) as TodoRow[];
-  for (const todo of todos) {
-    const event: TodoCreatedEvent = {
-      kind: "todo_created",
-      id: todo.id,
-      short: todo.short,
-      due_date: todo.due_date,
-      cost_of_delay: todo.cost_of_delay,
-      effort: todo.effort,
-      at: new Date().toISOString(),
-    };
-
-    await appendEvent(event);
-    applyEvent(event);
+  for (const event of createdEvents) {
+    applyCreateEvent(event);
+  }  
+  const shortUpdatedEvents = [
+    ...shortUpdated,
+  ].sort(byEventTimestamp);
+  for (const event of shortUpdatedEvents) {
+    applyShortUpdatedEvent(event);
   }
 }
 
@@ -191,7 +188,6 @@ async function initializeStore(): Promise<Result<void, AppError>> {
     if (!initPromise) {
       initPromise = (async () => {
         await replayEventsFromDisk();
-        await bootstrapFromLegacySnapshotIfNeeded();
         isInitialized = true;
       })();
     }
@@ -224,7 +220,7 @@ async function createTodo(): Promise<Result<TodoRow[], AppError>> {
     };
 
     await appendEvent(event);
-    applyEvent(event);
+    applyCreateEvent(event);
 
     return { ok: true, value: cloneTodos() };
   } catch {
@@ -287,7 +283,7 @@ async function updateTodoShort(
     };
 
     await appendEvent(event);
-    applyEvent(event);
+    applyShortUpdatedEvent(event);
 
     return { ok: true, value: byId.get(id)! };
   } catch {
