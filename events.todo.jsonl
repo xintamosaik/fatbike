@@ -1,3 +1,7 @@
 {"seq":1,"stream":"todo","kind":"todo_created","entity_id":1,"at":"2026-03-31T20:25:05.762Z","data":{"short":"","due_date":"","cost_of_delay":0,"effort":"mins"}}
 {"seq":2,"stream":"todo","kind":"todo_short_updated","entity_id":1,"at":"2026-03-31T20:25:08.695Z","data":{"short":"qqq"}}
 {"seq":3,"stream":"todo","kind":"todo_short_updated","entity_id":1,"at":"2026-03-31T20:25:35.185Z","data":{"short":"Understand event sourcing"}}
+{"seq":4,"stream":"todo","kind":"todo_due_date_updated","entity_id":1,"at":"2026-03-31T22:23:04.575Z","data":{"due_date":"2026-04-15"}}
+{"seq":5,"stream":"todo","kind":"todo_created","entity_id":2,"at":"2026-03-31T22:23:06.316Z","data":{"short":"","due_date":"","cost_of_delay":0,"effort":"mins"}}
+{"seq":6,"stream":"todo","kind":"todo_due_date_updated","entity_id":2,"at":"2026-03-31T22:23:11.248Z","data":{"due_date":"2026-04-16"}}
+{"seq":7,"stream":"todo","kind":"todo_short_updated","entity_id":2,"at":"2026-03-31T22:23:14.281Z","data":{"short":"Add something"}}
