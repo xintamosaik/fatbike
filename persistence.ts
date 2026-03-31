@@ -2,31 +2,44 @@ import type { AppError, Result } from "./error";
 import type { TodoRow } from "./types";
 import { appendFile } from "node:fs/promises";
 
-const todoCreatedEventsFile = "events.todo.created.jsonl";
-const todoShortUpdatedEventsFile = "events.todo.short.updated.jsonl";
+const eventsFile = "events.todo.jsonl";
 
-type TodoCreatedEvent = {
-  kind: "todo_created";
-  id: number;
+type TodoCreatedData = {
   short: string;
   due_date: string;
   cost_of_delay: -2 | -1 | 0 | 1 | 2;
   effort: "mins" | "hours" | "days" | "weeks" | "months";
+};
+
+type TodoShortUpdatedData = {
+  short: string;
+};
+
+type TodoCreatedEvent = {
+  seq: number;
+  stream: "todo";
+  kind: "todo_created";
+  entity_id: number;
   at: string;
+  data: TodoCreatedData;
 };
 
 type TodoShortUpdatedEvent = {
+  seq: number;
+  stream: "todo";
   kind: "todo_short_updated";
-  id: number;
-  short: string;
+  entity_id: number;
   at: string;
+  data: TodoShortUpdatedData;
 };
 
 type TodoEvent = TodoCreatedEvent | TodoShortUpdatedEvent;
 
 const byId = new Map<number, TodoRow>();
 const orderedIds: number[] = [];
+
 let nextId = 1;
+let nextSeq = 1;
 
 let isInitialized = false;
 let initPromise: Promise<void> | null = null;
@@ -38,51 +51,60 @@ function cloneTodos(): TodoRow[] {
     .filter((todo): todo is TodoRow => Boolean(todo));
 }
 
-function applyCreateEvent(event: TodoCreatedEvent): void {
-  const row: TodoRow = {
-    id: event.id,
-    short: event.short,
-    due_date: event.due_date,
-    cost_of_delay: event.cost_of_delay,
-    effort: event.effort,
-  };
+function applyEvent(event: TodoEvent): void {
+  switch (event.kind) {
+    case "todo_created": {
+      const row: TodoRow = {
+        id: event.entity_id,
+        short: event.data.short,
+        due_date: event.data.due_date,
+        cost_of_delay: event.data.cost_of_delay,
+        effort: event.data.effort,
+      };
 
-  const alreadyExists = byId.has(event.id);
-  byId.set(event.id, row);
-  if (!alreadyExists) {
-    orderedIds.push(event.id);
-    orderedIds.sort((a, b) => a - b);
+      const alreadyExists = byId.has(event.entity_id);
+      byId.set(event.entity_id, row);
+
+      if (!alreadyExists) {
+        orderedIds.push(event.entity_id);
+        orderedIds.sort((a, b) => a - b);
+      }
+
+      nextId = Math.max(nextId, event.entity_id + 1);
+      nextSeq = Math.max(nextSeq, event.seq + 1);
+      return;
+    }
+
+    case "todo_short_updated": {
+      const existing = byId.get(event.entity_id);
+      if (!existing) {
+        nextSeq = Math.max(nextSeq, event.seq + 1);
+        return;
+      }
+
+      byId.set(event.entity_id, {
+        ...existing,
+        short: event.data.short,
+      });
+
+      nextSeq = Math.max(nextSeq, event.seq + 1);
+      return;
+    }
   }
-  nextId = Math.max(nextId, event.id + 1);
-}
-function applyShortUpdatedEvent(event: TodoShortUpdatedEvent): void {
-  
-  const existing = byId.get(event.id);
-  if (!existing) {
-    return;
-  }
 
-  byId.set(event.id, { ...existing, short: event.short });
+  const exhaustiveCheck: never = event;
+  throw new Error(`Unhandled event: ${JSON.stringify(exhaustiveCheck)}`);
 }
 
-function appendCreateEvent(event: TodoCreatedEvent): Promise<void> {
-  const { kind: _kind, ...payload } = event;
-  const line = `${JSON.stringify(payload)}\n`;
-  writeQueue = writeQueue.then(() => appendFile(todoCreatedEventsFile, line, "utf8"));
+function appendEvent(event: TodoEvent): Promise<void> {
+  const line = `${JSON.stringify(event)}\n`;
+  writeQueue = writeQueue.then(() => appendFile(eventsFile, line, "utf8"));
   return writeQueue;
 }
 
-function appendShortUpdatedEvent(event: TodoShortUpdatedEvent): Promise<void> {
-  const { kind: _kind, ...payload } = event;
-  const line = `${JSON.stringify(payload)}\n`;
-  writeQueue = writeQueue.then(() => appendFile(todoShortUpdatedEventsFile, line, "utf8"));
-  return writeQueue;
-}
-
-async function readCreateEventsFromFile(
-  path: string,
-): Promise<TodoCreatedEvent[]> {
+async function readEventsFromFile(path: string): Promise<TodoEvent[]> {
   const file = Bun.file(path);
+
   if (!(await file.exists())) {
     return [];
   }
@@ -92,80 +114,32 @@ async function readCreateEventsFromFile(
     return [];
   }
 
-  const events: TodoCreatedEvent[] = [];
+  const events: TodoEvent[] = [];
   const lines = text.split("\n");
+
   for (const line of lines) {
     const trimmed = line.trim();
     if (!trimmed) {
       continue;
     }
 
-    const parsed = JSON.parse(trimmed) as Partial<TodoCreatedEvent> & {
-      id: number;
-      at: string;
-    };
- 
-    events.push({ ...parsed } as TodoCreatedEvent);
+    const parsed = JSON.parse(trimmed) as TodoEvent;
+    events.push(parsed);
   }
 
   return events;
 }
-async function readShortUpdatedEventsFromFile(
-  path: string,
-): Promise<TodoShortUpdatedEvent[]> {
-  const file = Bun.file(path);
-  if (!(await file.exists())) {
-    return [];
-  }
 
-  const text = await file.text();
-  if (!text.trim()) {
-    return [];
-  }
-
-  const events: TodoShortUpdatedEvent[] = [];
-  const lines = text.split("\n");
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed) {
-      continue;
-    }
-
-    const parsed = JSON.parse(trimmed) as Partial<TodoShortUpdatedEvent> & {
-      id: number;
-      at: string;
-    };
-
-
-
-    events.push({ ...parsed } as TodoShortUpdatedEvent);
-  }
-
-  return events;
-}
-function byEventTimestamp(a: TodoEvent, b: TodoEvent): number {
-  const left = Date.parse(a.at);
-  const right = Date.parse(b.at);
-
-  if (!Number.isNaN(left) && !Number.isNaN(right)) {
-    return left - right;
-  }
-
-  return a.id - b.id;
+function byEventSequence(a: TodoEvent, b: TodoEvent): number {
+  return a.seq - b.seq;
 }
 
 async function replayEventsFromDisk(): Promise<void> {
-  const [created, shortUpdated] =
-    await Promise.all([
-      readCreateEventsFromFile(todoCreatedEventsFile),
-      readShortUpdatedEventsFromFile(todoShortUpdatedEventsFile),
-    ]);
+  const events = await readEventsFromFile(eventsFile);
+  events.sort(byEventSequence);
 
-  for (const event of created.sort(byEventTimestamp)) {
-    applyCreateEvent(event);
-  }
-  for (const event of shortUpdated.sort(byEventTimestamp)) {
-    applyShortUpdatedEvent(event);
+  for (const event of events) {
+    applyEvent(event);
   }
 }
 
@@ -200,17 +174,21 @@ async function createTodo(): Promise<Result<TodoRow[], AppError>> {
 
   try {
     const event: TodoCreatedEvent = {
+      seq: nextSeq,
+      stream: "todo",
       kind: "todo_created",
-      id: nextId,
-      short: "",
-      due_date: "",
-      cost_of_delay: 0,
-      effort: "mins",
+      entity_id: nextId,
       at: new Date().toISOString(),
+      data: {
+        short: "",
+        due_date: "",
+        cost_of_delay: 0,
+        effort: "mins",
+      },
     };
 
-    await appendCreateEvent(event);
-    applyCreateEvent(event);
+    await appendEvent(event);
+    applyEvent(event);
 
     return { ok: true, value: cloneTodos() };
   } catch {
@@ -266,14 +244,18 @@ async function updateTodoShort(
 
   try {
     const event: TodoShortUpdatedEvent = {
+      seq: nextSeq,
+      stream: "todo",
       kind: "todo_short_updated",
-      id,
-      short,
+      entity_id: id,
       at: new Date().toISOString(),
+      data: {
+        short,
+      },
     };
 
-    await appendShortUpdatedEvent(event);
-    applyShortUpdatedEvent(event);
+    await appendEvent(event);
+    applyEvent(event);
 
     return { ok: true, value: byId.get(id)! };
   } catch {
