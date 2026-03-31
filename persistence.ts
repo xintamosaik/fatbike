@@ -166,7 +166,7 @@ async function initializeStore(): Promise<Result<void, AppError>> {
   }
 }
 
-async function createTodo(): Promise<Result<TodoRow[], AppError>> {
+async function createTodo(): Promise<Result<TodoRow, AppError>> {
   const initResult = await initializeStore();
   if (!initResult.ok) {
     return initResult;
@@ -190,7 +190,7 @@ async function createTodo(): Promise<Result<TodoRow[], AppError>> {
     await appendEvent(event);
     applyEvent(event);
 
-    return { ok: true, value: cloneTodos() };
+    return { ok: true, value: { ...event.data, id: event.entity_id } };
   } catch {
     return {
       ok: false,

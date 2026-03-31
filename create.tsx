@@ -1,5 +1,5 @@
 import { createTodo } from "./persistence";
-import TodoList from "./table";
+import { TodoRowDisplay } from "./table";
 import { appErrorResponse, htmlResponse } from "./response";
 
 async function handleTodoCreate(): Promise<Response> {
@@ -8,7 +8,7 @@ async function handleTodoCreate(): Promise<Response> {
         return appErrorResponse(createResult.error);
     }
 
-    return htmlResponse(<TodoList todos={createResult.value} />);
+    return htmlResponse(<TodoRowDisplay todo={createResult.value} />);
 }
 
 export default handleTodoCreate;

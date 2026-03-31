@@ -1,6 +1,24 @@
 import type { TodoRow } from "./types";
 
 import ShortDisplay from "./short";
+function TodoRowDisplay(props: { todo: TodoRow }) {
+  return (
+    <tr>
+      <td>
+        <ShortDisplay todo={props.todo} />
+      </td>
+      <td>
+        {props.todo.due_date}
+      </td>
+      <td>
+        {props.todo.cost_of_delay}
+      </td>
+      <td>
+        {props.todo.effort}
+      </td>
+    </tr>
+  );
+}
 
 function TodoList(props: { todos: TodoRow[] }) {
   return (
@@ -16,29 +34,16 @@ function TodoList(props: { todos: TodoRow[] }) {
             <th>Effort</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody id="todos-list">
           <tr>
             <td colSpan={4}>
-              <a href="/todos/new" fx-action="/todos/new" fx-target="#output" fx-method="POST" fx-swap="outerHTML">
+              <a href="/todos/new" fx-action="/todos/new" fx-target="#todos-list" fx-method="POST" fx-swap="beforeend">
                 + New Todo
               </a>   
             </td>
           </tr>
           {props.todos.map((todo) => (
-            <tr key={todo.id}>
-              <td>
-                <ShortDisplay todo={todo} />
-              </td>
-              <td>
-                {todo.due_date}
-              </td>
-              <td>
-                {todo.cost_of_delay}
-              </td>
-              <td>
-                {todo.effort}
-              </td>
-            </tr>
+            <TodoRowDisplay key={todo.id} todo={todo} />
           ))}
         </tbody>
       </table>
@@ -46,5 +51,5 @@ function TodoList(props: { todos: TodoRow[] }) {
   );
 }
 
-
-export default TodoList;
+       
+export { TodoList, TodoRowDisplay };
