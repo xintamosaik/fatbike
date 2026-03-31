@@ -3,8 +3,10 @@ import type { TodoRow } from "./types";
 import { appendFile } from "node:fs/promises";
 
 const legacyEventsFile = "todos.events.jsonl";
-const todoCreatedEventsFile = "todos.created.events.jsonl";
-const todoShortUpdatedEventsFile = "todos.short-updated.events.jsonl";
+const legacyTodoCreatedEventsFile = "todos.created.events.jsonl";
+const legacyTodoShortUpdatedEventsFile = "todos.short-updated.events.jsonl";
+const todoCreatedEventsFile = "events.todo.created.jsonl";
+const todoShortUpdatedEventsFile = "events.todo.short.updated.jsonl";
 const legacySnapshotFile = "todos.json";
 
 type TodoCreatedEvent = {
@@ -82,7 +84,10 @@ function appendEvent(event: TodoEvent): Promise<void> {
   return writeQueue;
 }
 
-async function readEventsFromFile(path: string): Promise<TodoEvent[]> {
+async function readEventsFromFile(
+  path: string,
+  fallbackKind?: TodoEvent["kind"],
+): Promise<TodoEvent[]> {
   const file = Bun.file(path);
   if (!(await file.exists())) {
     return [];
@@ -101,8 +106,17 @@ async function readEventsFromFile(path: string): Promise<TodoEvent[]> {
       continue;
     }
 
-    const parsed = JSON.parse(trimmed) as TodoEvent;
-    events.push(parsed);
+    const parsed = JSON.parse(trimmed) as Partial<TodoEvent> & {
+      id: number;
+      at: string;
+    };
+
+    const kind = parsed.kind ?? fallbackKind;
+    if (!kind) {
+      continue;
+    }
+
+    events.push({ ...parsed, kind } as TodoEvent);
   }
 
   return events;
@@ -120,13 +134,22 @@ function byEventTimestamp(a: TodoEvent, b: TodoEvent): number {
 }
 
 async function replayEventsFromDisk(): Promise<void> {
-  const [created, shortUpdated, legacy] = await Promise.all([
-    readEventsFromFile(todoCreatedEventsFile),
-    readEventsFromFile(todoShortUpdatedEventsFile),
+  const [created, createdLegacy, shortUpdated, shortUpdatedLegacy, legacy] =
+    await Promise.all([
+      readEventsFromFile(todoCreatedEventsFile, "todo_created"),
+      readEventsFromFile(legacyTodoCreatedEventsFile, "todo_created"),
+      readEventsFromFile(todoShortUpdatedEventsFile, "todo_short_updated"),
+      readEventsFromFile(legacyTodoShortUpdatedEventsFile, "todo_short_updated"),
     readEventsFromFile(legacyEventsFile),
-  ]);
+    ]);
 
-  const events = [...created, ...shortUpdated, ...legacy].sort(byEventTimestamp);
+  const events = [
+    ...created,
+    ...createdLegacy,
+    ...shortUpdated,
+    ...shortUpdatedLegacy,
+    ...legacy,
+  ].sort(byEventTimestamp);
   for (const event of events) {
     applyEvent(event);
   }
