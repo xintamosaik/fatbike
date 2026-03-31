@@ -3,6 +3,7 @@ import type { TodoRow } from "./types";
 import type {
   TodoCreatedEvent,
   TodoDueDateUpdatedEvent,
+  TodoEffortUpdatedEvent,
   TodoShortUpdatedEvent,
 } from "./todo-events";
 
@@ -263,11 +264,72 @@ async function updateTodoDueDate(
   }
 }
 
+/**
+ * Updates the `effort` field of a todo by appending a
+ * `todo_effort_updated` event and applying it to the current projection.
+ *
+ * If the value is unchanged, no event is written and the current todo is
+ * returned as-is.
+ */
+async function updateTodoEffort(
+  id: number,
+  effort: TodoRow["effort"],
+): Promise<Result<TodoRow, AppError>> {
+  const initResult = await initializeStore();
+  if (!initResult.ok) {
+    return initResult;
+  }
+
+  const existing = getTodoById(id);
+  if (!existing) {
+    return {
+      ok: false,
+      error: { kind: "not_found", message: "Todo not found." },
+    };
+  }
+
+  if (existing.effort === effort) {
+    return { ok: true, value: existing };
+  }
+
+  try {
+    const event: TodoEffortUpdatedEvent = {
+      seq: getNextEventSeq(),
+      stream: "todo",
+      kind: "todo_effort_updated",
+      entity_id: id,
+      at: new Date().toISOString(),
+      data: {
+        effort,
+      },
+    };
+
+    await appendEvent(event);
+    applyEvent(event);
+
+    const updated = getTodoById(id);
+    if (!updated) {
+      return {
+        ok: false,
+        error: { kind: "internal", message: "Failed to update effort." },
+      };
+    }
+
+    return { ok: true, value: updated };
+  } catch {
+    return {
+      ok: false,
+      error: { kind: "internal", message: "Failed to update effort." },
+    };
+  }
+}
+
 export {
   initializeStore,
   getTodos,
   getTodo,
   updateTodoShort,
   updateTodoDueDate,
+  updateTodoEffort,
   createTodo,
 };

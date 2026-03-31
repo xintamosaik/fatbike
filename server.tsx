@@ -5,6 +5,8 @@ import handleTodoUpdateShort from "./short-update";
 import handleTodoEditShort from "./short-edit";
 import handleTodoEditDueDate from "./due-date-edit";
 import handleTodoUpdateDueDate from "./due-date-update";
+import handleTodoEditEffort from "./effort-edit";
+import handleTodoUpdateEffort from "./effort-update";
 import { initializeStore } from "./persistence";
 
 /**
@@ -90,6 +92,26 @@ const server = Bun.serve({
         }
 
         return handleTodoUpdateDueDate(request, id);
+      },
+    },
+    "/todos/:id/edit/effort": {
+      POST: (request) => {
+        const id = parseTodoId(request.params.id);
+        if (id === null) {
+          return new Response("Not Found", { status: 404 });
+        }
+
+        return handleTodoEditEffort(id);
+      },
+    },
+    "/todos/:id/update/effort": {
+      POST: (request) => {
+        const id = parseTodoId(request.params.id);
+        if (id === null) {
+          return new Response("Not Found", { status: 404 });
+        }
+
+        return handleTodoUpdateEffort(request, id);
       },
     },
   },

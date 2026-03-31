@@ -1,6 +1,7 @@
 import type { TodoRow } from "./types";
 import ShortDisplay from "./short";
 import DueDateDisplay from "./due-date";
+import EffortDisplay from "./effort";
 
 /**
  * Table fragments for todo list rendering.
@@ -29,7 +30,7 @@ function TodoRowDisplay(props: { todo: TodoRow }) {
         {props.todo.cost_of_delay}
       </td>
       <td>
-        {props.todo.effort}
+        <EffortDisplay todo={props.todo} />
       </td>
     </tr>
   );

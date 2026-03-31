@@ -89,6 +89,22 @@ function applyEvent(event: TodoEvent): void {
             nextSeq = Math.max(nextSeq, event.seq + 1);
             return;
         }
+
+        case "todo_effort_updated": {
+            const existing = byId.get(event.entity_id);
+            if (!existing) {
+                nextSeq = Math.max(nextSeq, event.seq + 1);
+                return;
+            }
+
+            byId.set(event.entity_id, {
+                ...existing,
+                effort: event.data.effort,
+            });
+
+            nextSeq = Math.max(nextSeq, event.seq + 1);
+            return;
+        }
     }
 
     const exhaustiveCheck: never = event;
