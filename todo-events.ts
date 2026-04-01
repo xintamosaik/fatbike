@@ -25,5 +25,5 @@ type TodoEvent =
     | TodoCostOfDelayUpdatedEvent;
 
 export type {
-    TodoEvent, TodoCreatedEvent
+    TodoEvent
 };

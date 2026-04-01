@@ -1,7 +1,8 @@
 import type { AppError, Result } from "./error";
 import type { TodoRow } from "./types";
 
-import type { TodoCreatedEvent, TodoEvent } from "./todo-events";
+import type { TodoEvent } from "./todo-events";
+import type { TodoCreatedEvent } from "./todo-create";
 
 import { appendEvent } from "./todo-store";
 import {
