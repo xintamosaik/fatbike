@@ -2,8 +2,8 @@ import homepage from "./index.html";
 import handleTodosList from "./list";
 import handleTodoCreate from "./create";
 import { handleTodoUpdateShort, handleTodoEditShort } from "./todo-short";
-import handleTodoEditDueDate from "./due-date-edit";
-import handleTodoUpdateDueDate from "./due-date-update";
+import { handleTodoEditDueDate, handleTodoUpdateDueDate } from "./todo-due-date";
+
 import handleTodoEditEffort from "./effort-edit";
 import handleTodoUpdateEffort from "./effort-update";
 import { handleTodoEditCostOfDelay, handleTodoUpdateCostOfDelay } from "./todo-cost-of-delay";

@@ -17,6 +17,12 @@ import type {
     TodoCostOfDelayUpdatedEvent,
     TodoCostOfDelayUpdatedData,
 } from "./todo-cost-of-delay";
+
+import type {
+    TodoDueDateUpdatedEvent,
+    TodoDueDateUpdatedData,
+} from "./todo-due-date";
+
 /**
  * The data shape for a `todo_created` event data, which captures the initial state of
  * a todo.
@@ -26,14 +32,6 @@ type TodoCreatedData = {
     due_date: string;
     cost_of_delay: -2 | -1 | 0 | 1 | 2;
     effort: "mins" | "hours" | "days" | "weeks" | "months";
-};
-
-/**
- * The data shape for a `todo_due_date_updated` event data, which captures a
- * change to the `due_date` field of a todo.
- */
-type TodoDueDateUpdatedData = {
-    due_date: string;
 };
 
 /**
@@ -54,20 +52,6 @@ type TodoCreatedEvent = {
     entity_id: number;
     at: string;
     data: TodoCreatedData;
-};
-
-
-/**
- * The shape of a `todo_due_date_updated` event, which captures an update to
- * the `due_date` field of an existing todo.
- */
-type TodoDueDateUpdatedEvent = {
-    seq: number;
-    stream: "todo";
-    kind: "todo_due_date_updated";
-    entity_id: number;
-    at: string;
-    data: TodoDueDateUpdatedData;
 };
 
 /**

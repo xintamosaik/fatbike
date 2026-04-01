@@ -1,8 +1,8 @@
 import type { TodoRow } from "./types";
 import { ShortDisplay } from "./todo-short";
-import DueDateDisplay from "./due-date";
+import { DueDateDisplay } from "./todo-due-date";
 import EffortDisplay from "./effort";
-import {CostOfDelayDisplay} from "./todo-cost-of-delay";
+import { CostOfDelayDisplay } from "./todo-cost-of-delay";
 
 /**
  * Table fragments for todo list rendering.
