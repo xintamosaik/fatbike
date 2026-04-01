@@ -6,3 +6,5 @@
 {"seq":6,"stream":"todo","kind":"todo_due_date_updated","entity_id":2,"at":"2026-03-31T22:23:11.248Z","data":{"due_date":"2026-04-16"}}
 {"seq":7,"stream":"todo","kind":"todo_short_updated","entity_id":2,"at":"2026-03-31T22:23:14.281Z","data":{"short":"Add something"}}
 {"seq":8,"stream":"todo","kind":"todo_effort_updated","entity_id":1,"at":"2026-03-31T22:28:40.933Z","data":{"effort":"weeks"}}
+{"seq":9,"stream":"todo","kind":"todo_cost_of_delay_updated","entity_id":1,"at":"2026-03-31T22:32:43.631Z","data":{"cost_of_delay":1}}
+{"seq":10,"stream":"todo","kind":"todo_cost_of_delay_updated","entity_id":2,"at":"2026-03-31T22:32:46.796Z","data":{"cost_of_delay":2}}
