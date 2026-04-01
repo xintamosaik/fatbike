@@ -1,10 +1,10 @@
 import homepage from "./index.html";
-import handleTodosList from "./list";
-import handleTodoCreate from "./create";
+import { handleTodosList } from "./todo-list";
+import handleTodoCreate from "./todo-create";
 import { handleTodoUpdateShort, handleTodoEditShort } from "./todo-short";
 import { handleTodoEditDueDate, handleTodoUpdateDueDate } from "./todo-due-date";
 
-import {handleTodoEditEffort, handleTodoUpdateEffort} from "./todo-effort";
+import { handleTodoEditEffort, handleTodoUpdateEffort } from "./todo-effort";
 
 import { handleTodoEditCostOfDelay, handleTodoUpdateCostOfDelay } from "./todo-cost-of-delay";
 import { initializeStore } from "./persistence";

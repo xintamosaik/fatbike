@@ -1,5 +1,5 @@
 import { createTodo } from "./persistence";
-import { TodoRowDisplay } from "./table";
+import { TodoRowDisplay } from "./todo-list";
 import { appErrorResponse, htmlResponse } from "./response";
 
 /**

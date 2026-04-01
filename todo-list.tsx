@@ -1,8 +1,33 @@
+import { getTodos } from "./persistence";
+import { appErrorResponse, htmlResponse } from "./response";
+
 import type { TodoRow } from "./types";
 import { ShortDisplay } from "./todo-short";
 import { DueDateDisplay } from "./todo-due-date";
 import { EffortDisplay } from "./todo-effort";
 import { CostOfDelayDisplay } from "./todo-cost-of-delay";
+
+/**
+ * Handles the initial todo list read.
+ *
+ * Architectural role:
+ * - loads the current read model from persistence
+ * - renders the full table view
+ *
+ * Unlike create/update handlers, this returns a collection fragment because
+ * the list page is the entry point for the UI.
+ */
+async function handleTodosList(): Promise<Response> {
+  const todosResult = await getTodos();
+  if (!todosResult.ok) {
+    return appErrorResponse(todosResult.error);
+  }
+
+  return htmlResponse(<TodoList todos={todosResult.value} />);
+}
+
+
+
 
 /**
  * Table fragments for todo list rendering.
@@ -75,4 +100,4 @@ function TodoList(props: { todos: TodoRow[] }) {
 }
 
 
-export { TodoList, TodoRowDisplay };
+export { TodoList, TodoRowDisplay, handleTodosList };
