@@ -12,6 +12,11 @@ import type {
     TodoShortUpdatedEvent,
     TodoShortUpdatedData,
 } from "./todo-short";
+
+import type {
+    TodoCostOfDelayUpdatedEvent,
+    TodoCostOfDelayUpdatedData,
+} from "./todo-cost-of-delay";
 /**
  * The data shape for a `todo_created` event data, which captures the initial state of
  * a todo.
@@ -37,14 +42,6 @@ type TodoDueDateUpdatedData = {
  */
 type TodoEffortUpdatedData = {
     effort: "mins" | "hours" | "days" | "weeks" | "months";
-};
-
-/**
- * The data shape for a `todo_cost_of_delay_updated` event data, which captures
- * a change to the `cost_of_delay` field of a todo.
- */
-type TodoCostOfDelayUpdatedData = {
-    cost_of_delay: -2 | -1 | 0 | 1 | 2;
 };
 
 /**
@@ -86,18 +83,6 @@ type TodoEffortUpdatedEvent = {
     data: TodoEffortUpdatedData;
 };
 
-/**
- * The shape of a `todo_cost_of_delay_updated` event, which captures an update
- * to the `cost_of_delay` field of an existing todo.
- */
-type TodoCostOfDelayUpdatedEvent = {
-    seq: number;
-    stream: "todo";
-    kind: "todo_cost_of_delay_updated";
-    entity_id: number;
-    at: string;
-    data: TodoCostOfDelayUpdatedData;
-};
 
 /**
  * The union of all event shapes for the todo stream.
