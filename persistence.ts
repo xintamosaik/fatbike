@@ -1,12 +1,12 @@
 import type { AppError, Result } from "./error";
 import type { TodoRow } from "./types";
-import type {
-  TodoCreatedEvent,
-  TodoCostOfDelayUpdatedEvent,
-  TodoDueDateUpdatedEvent,
-  TodoEffortUpdatedEvent,
-  TodoShortUpdatedEvent,
-} from "./todo-events";
+
+import type { TodoCreatedEvent } from "./todo-events";
+import type { TodoCostOfDelayUpdatedEvent } from "./todo-cost-of-delay";
+import type { TodoDueDateUpdatedEvent } from "./todo-due-date";
+import type { TodoEffortUpdatedEvent } from "./todo-effort";
+import type { TodoShortUpdatedEvent } from "./todo-short";
+
 
 import { appendEvent } from "./todo-store";
 import {

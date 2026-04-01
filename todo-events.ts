@@ -8,25 +8,11 @@
  * These types describe persisted facts, not UI fragments and not projection
  * state.
  */
-import type {
-    TodoShortUpdatedEvent,
-    TodoShortUpdatedData,
-} from "./todo-short";
 
-import type {
-    TodoCostOfDelayUpdatedEvent,
-    TodoCostOfDelayUpdatedData,
-} from "./todo-cost-of-delay";
-
-import type {
-    TodoDueDateUpdatedEvent,
-    TodoDueDateUpdatedData,
-} from "./todo-due-date";
-
-import type {
-    TodoEffortUpdatedEvent,
-    TodoEffortUpdatedData,  
-} from "./todo-effort";
+import type { TodoShortUpdatedEvent } from "./todo-short";
+import type { TodoCostOfDelayUpdatedEvent } from "./todo-cost-of-delay";
+import type { TodoDueDateUpdatedEvent } from "./todo-due-date";
+import type { TodoEffortUpdatedEvent } from "./todo-effort";
 
 /**
  * The data shape for a `todo_created` event data, which captures the initial state of
@@ -38,7 +24,6 @@ type TodoCreatedData = {
     cost_of_delay: -2 | -1 | 0 | 1 | 2;
     effort: "mins" | "hours" | "days" | "weeks" | "months";
 };
-
 
 /**
  * The shape of a `todo_created` event, which captures the creation of a new todo.
@@ -63,15 +48,5 @@ type TodoEvent =
     | TodoCostOfDelayUpdatedEvent;
 
 export type {
-    TodoCreatedData,
-    TodoShortUpdatedData,
-    TodoDueDateUpdatedData,
-    TodoEffortUpdatedData,
-    TodoCostOfDelayUpdatedData,
-    TodoCreatedEvent,
-    TodoShortUpdatedEvent,
-    TodoDueDateUpdatedEvent,
-    TodoEffortUpdatedEvent,
-    TodoCostOfDelayUpdatedEvent,
-    TodoEvent,
+    TodoEvent, TodoCreatedEvent
 };
