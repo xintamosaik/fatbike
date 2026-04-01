@@ -8,34 +8,11 @@
  * These types describe persisted facts, not UI fragments and not projection
  * state.
  */
-
+import type { TodoCreatedEvent } from "./todo-create";
 import type { TodoShortUpdatedEvent } from "./todo-short";
 import type { TodoCostOfDelayUpdatedEvent } from "./todo-cost-of-delay";
 import type { TodoDueDateUpdatedEvent } from "./todo-due-date";
 import type { TodoEffortUpdatedEvent } from "./todo-effort";
-
-/**
- * The data shape for a `todo_created` event data, which captures the initial state of
- * a todo.
- */
-type TodoCreatedData = {
-    short: string;
-    due_date: string;
-    cost_of_delay: -2 | -1 | 0 | 1 | 2;
-    effort: "mins" | "hours" | "days" | "weeks" | "months";
-};
-
-/**
- * The shape of a `todo_created` event, which captures the creation of a new todo.
- */
-type TodoCreatedEvent = {
-    seq: number;
-    stream: "todo";
-    kind: "todo_created";
-    entity_id: number;
-    at: string;
-    data: TodoCreatedData;
-};
 
 /**
  * The union of all event shapes for the todo stream.

@@ -26,9 +26,6 @@ async function handleTodosList(): Promise<Response> {
   return htmlResponse(<TodoList todos={todosResult.value} />);
 }
 
-
-
-
 /**
  * Table fragments for todo list rendering.
  *

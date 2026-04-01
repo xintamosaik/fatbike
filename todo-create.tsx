@@ -3,6 +3,29 @@ import { TodoRowDisplay } from "./todo-list";
 import { appErrorResponse, htmlResponse } from "./response";
 
 /**
+ * The data shape for a `todo_created` event data, which captures the initial state of
+ * a todo.
+ */
+type TodoCreatedData = {
+    short: string;
+    due_date: string;
+    cost_of_delay: -2 | -1 | 0 | 1 | 2;
+    effort: "mins" | "hours" | "days" | "weeks" | "months";
+};
+
+/**
+ * The shape of a `todo_created` event, which captures the creation of a new todo.
+ */
+type TodoCreatedEvent = {
+    seq: number;
+    stream: "todo";
+    kind: "todo_created";
+    entity_id: number;
+    at: string;
+    data: TodoCreatedData;
+};
+
+/**
  * Handles the "create todo" interaction.
  *
  * Architectural role:
@@ -23,3 +46,4 @@ async function handleTodoCreate(): Promise<Response> {
 }
 
 export default handleTodoCreate;
+export type { TodoCreatedEvent };
