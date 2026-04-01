@@ -8,7 +8,10 @@
  * These types describe persisted facts, not UI fragments and not projection
  * state.
  */
-
+import type {
+    TodoShortUpdatedEvent,
+    TodoShortUpdatedData,
+} from "./todo-short";
 /**
  * The data shape for a `todo_created` event data, which captures the initial state of
  * a todo.
@@ -18,14 +21,6 @@ type TodoCreatedData = {
     due_date: string;
     cost_of_delay: -2 | -1 | 0 | 1 | 2;
     effort: "mins" | "hours" | "days" | "weeks" | "months";
-};
-
-/**
- * The data shape for a `todo_short_updated` event data, which captures a change to the
- * `short` field of a todo.
- */
-type TodoShortUpdatedData = {
-    short: string;
 };
 
 /**
@@ -64,18 +59,6 @@ type TodoCreatedEvent = {
     data: TodoCreatedData;
 };
 
-/**
- * The shape of a `todo_short_updated` event, which captures an update to the `short`
- * field of an existing todo.
- */
-type TodoShortUpdatedEvent = {
-    seq: number;
-    stream: "todo";
-    kind: "todo_short_updated";
-    entity_id: number;
-    at: string;
-    data: TodoShortUpdatedData;
-};
 
 /**
  * The shape of a `todo_due_date_updated` event, which captures an update to

@@ -1,8 +1,7 @@
 import homepage from "./index.html";
 import handleTodosList from "./list";
 import handleTodoCreate from "./create";
-import handleTodoUpdateShort from "./short-update";
-import handleTodoEditShort from "./short-edit";
+import {handleTodoUpdateShort, handleTodoEditShort} from "./todo-short";
 import handleTodoEditDueDate from "./due-date-edit";
 import handleTodoUpdateDueDate from "./due-date-update";
 import handleTodoEditEffort from "./effort-edit";
