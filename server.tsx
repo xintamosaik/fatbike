@@ -4,8 +4,8 @@ import handleTodoCreate from "./create";
 import { handleTodoUpdateShort, handleTodoEditShort } from "./todo-short";
 import { handleTodoEditDueDate, handleTodoUpdateDueDate } from "./todo-due-date";
 
-import handleTodoEditEffort from "./effort-edit";
-import handleTodoUpdateEffort from "./effort-update";
+import {handleTodoEditEffort, handleTodoUpdateEffort} from "./todo-effort";
+
 import { handleTodoEditCostOfDelay, handleTodoUpdateCostOfDelay } from "./todo-cost-of-delay";
 import { initializeStore } from "./persistence";
 

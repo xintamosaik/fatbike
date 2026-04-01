@@ -23,6 +23,11 @@ import type {
     TodoDueDateUpdatedData,
 } from "./todo-due-date";
 
+import type {
+    TodoEffortUpdatedEvent,
+    TodoEffortUpdatedData,  
+} from "./todo-effort";
+
 /**
  * The data shape for a `todo_created` event data, which captures the initial state of
  * a todo.
@@ -34,13 +39,6 @@ type TodoCreatedData = {
     effort: "mins" | "hours" | "days" | "weeks" | "months";
 };
 
-/**
- * The data shape for a `todo_effort_updated` event data, which captures a
- * change to the `effort` field of a todo.
- */
-type TodoEffortUpdatedData = {
-    effort: "mins" | "hours" | "days" | "weeks" | "months";
-};
 
 /**
  * The shape of a `todo_created` event, which captures the creation of a new todo.
@@ -53,20 +51,6 @@ type TodoCreatedEvent = {
     at: string;
     data: TodoCreatedData;
 };
-
-/**
- * The shape of a `todo_effort_updated` event, which captures an update to
- * the `effort` field of an existing todo.
- */
-type TodoEffortUpdatedEvent = {
-    seq: number;
-    stream: "todo";
-    kind: "todo_effort_updated";
-    entity_id: number;
-    at: string;
-    data: TodoEffortUpdatedData;
-};
-
 
 /**
  * The union of all event shapes for the todo stream.

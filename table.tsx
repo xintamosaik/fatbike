@@ -1,7 +1,7 @@
 import type { TodoRow } from "./types";
 import { ShortDisplay } from "./todo-short";
 import { DueDateDisplay } from "./todo-due-date";
-import EffortDisplay from "./effort";
+import { EffortDisplay } from "./todo-effort";
 import { CostOfDelayDisplay } from "./todo-cost-of-delay";
 
 /**
