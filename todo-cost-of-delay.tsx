@@ -3,7 +3,7 @@ import type { FormDataEntryValue } from "bun";
 import type { AppError, Result } from "./error";
 
 import { appErrorResponse, htmlResponse } from "./response";
-import { getTodo, updateTodoCostOfDelay } from "./persistence";
+import { getTodo, updateTodoWithEvent } from "./persistence";
 
 /**
  * The data shape for a `todo_cost_of_delay_updated` event data, which captures
@@ -25,6 +25,21 @@ type TodoCostOfDelayUpdatedEvent = {
     at: string;
     data: TodoCostOfDelayUpdatedData;
 };
+
+function updateTodoCostOfDelay( id: number, costOfDelay: TodoCostOfDelayUpdatedData["cost_of_delay"]): Promise<Result<TodoRow, AppError>> {
+    return updateTodoWithEvent({
+        id,
+        hasChanged: (existing) => existing.cost_of_delay !== costOfDelay,
+        makeEvent: ({ seq, at }) => ({
+            seq,
+            stream: "todo",
+            kind: "todo_cost_of_delay_updated",
+            entity_id: id,
+            at,
+            data: { cost_of_delay: costOfDelay },
+        }),
+    });
+}
 
 /**
  * Edit fragment for the todo cost of delay field.

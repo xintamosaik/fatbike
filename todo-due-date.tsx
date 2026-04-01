@@ -3,7 +3,7 @@ import type { FormDataEntryValue } from "bun";
 import type { AppError, Result } from "./error";
 
 import { appErrorResponse, htmlResponse } from "./response";
-import { updateTodoDueDate, getTodo } from "./persistence";
+import { getTodo, updateTodoWithEvent } from "./persistence";
 
 /**
  * The data shape for a `todo_due_date_updated` event data, which captures a
@@ -26,6 +26,20 @@ type TodoDueDateUpdatedEvent = {
     data: TodoDueDateUpdatedData;
 };
 
+function updateTodoDueDate( id: number, dueDate: TodoDueDateUpdatedData["due_date"]): Promise<Result<TodoRow, AppError>> {
+    return updateTodoWithEvent({
+        id,
+        hasChanged: (existing) => existing.due_date !== dueDate,
+        makeEvent: ({ seq, at }) => ({
+            seq,
+            stream: "todo",
+            kind: "todo_due_date_updated",
+            entity_id: id,
+            at,
+            data: { due_date: dueDate },
+        }),
+    });
+}
 
 /**
  * Edit fragment for the todo due date field.

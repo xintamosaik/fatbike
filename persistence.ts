@@ -1,12 +1,7 @@
 import type { AppError, Result } from "./error";
 import type { TodoRow } from "./types";
 
-import type { TodoCreatedEvent } from "./todo-events";
-import type { TodoCostOfDelayUpdatedEvent } from "./todo-cost-of-delay";
-import type { TodoDueDateUpdatedEvent } from "./todo-due-date";
-import type { TodoEffortUpdatedEvent } from "./todo-effort";
-import type { TodoShortUpdatedEvent } from "./todo-short";
-
+import type { TodoCreatedEvent, TodoEvent } from "./todo-events";
 
 import { appendEvent } from "./todo-store";
 import {
@@ -144,24 +139,19 @@ async function getTodo(id: number): Promise<Result<TodoRow, AppError>> {
 
   return { ok: true, value: todo };
 }
-
-/**
- * Updates the `short` field of a todo by appending a `todo_short_updated`
- * event and applying it to the current projection.
- *
- * If the value is unchanged, no event is written and the current todo is
- * returned as-is.
- */
-async function updateTodoShort(
-  id: number,
-  short: string,
+async function updateTodoWithEvent<TEvent extends TodoEvent>(
+  args: {
+    id: number;
+    hasChanged: (existing: TodoRow) => boolean;
+    makeEvent: (meta: { seq: number; at: string }) => TEvent;
+  },
 ): Promise<Result<TodoRow, AppError>> {
   const initResult = await initializeStore();
   if (!initResult.ok) {
     return initResult;
   }
 
-  const existing = getTodoById(id);
+  const existing = getTodoById(args.id);
   if (!existing) {
     return {
       ok: false,
@@ -169,26 +159,20 @@ async function updateTodoShort(
     };
   }
 
-  if (existing.short === short) {
+  if (!args.hasChanged(existing)) {
     return { ok: true, value: existing };
   }
 
   try {
-    const event: TodoShortUpdatedEvent = {
+    const event = args.makeEvent({
       seq: getNextEventSeq(),
-      stream: "todo",
-      kind: "todo_short_updated",
-      entity_id: id,
       at: new Date().toISOString(),
-      data: {
-        short,
-      },
-    };
+    });
 
     await appendEvent(event);
     applyEvent(event);
 
-    const updated = getTodoById(id);
+    const updated = getTodoById(args.id);
     if (!updated) {
       return {
         ok: false,
@@ -204,200 +188,10 @@ async function updateTodoShort(
     };
   }
 }
-
-/**
- * Updates the `due_date` field of a todo by appending a
- * `todo_due_date_updated` event and applying it to the current projection.
- *
- * If the value is unchanged, no event is written and the current todo is
- * returned as-is.
- */
-async function updateTodoDueDate(
-  id: number,
-  dueDate: string,
-): Promise<Result<TodoRow, AppError>> {
-  const initResult = await initializeStore();
-  if (!initResult.ok) {
-    return initResult;
-  }
-
-  const existing = getTodoById(id);
-  if (!existing) {
-    return {
-      ok: false,
-      error: { kind: "not_found", message: "Todo not found." },
-    };
-  }
-
-  if (existing.due_date === dueDate) {
-    return { ok: true, value: existing };
-  }
-
-  try {
-    const event: TodoDueDateUpdatedEvent = {
-      seq: getNextEventSeq(),
-      stream: "todo",
-      kind: "todo_due_date_updated",
-      entity_id: id,
-      at: new Date().toISOString(),
-      data: {
-        due_date: dueDate,
-      },
-    };
-
-    await appendEvent(event);
-    applyEvent(event);
-
-    const updated = getTodoById(id);
-    if (!updated) {
-      return {
-        ok: false,
-        error: { kind: "internal", message: "Failed to update due date." },
-      };
-    }
-
-    return { ok: true, value: updated };
-  } catch {
-    return {
-      ok: false,
-      error: { kind: "internal", message: "Failed to update due date." },
-    };
-  }
-}
-
-/**
- * Updates the `effort` field of a todo by appending a
- * `todo_effort_updated` event and applying it to the current projection.
- *
- * If the value is unchanged, no event is written and the current todo is
- * returned as-is.
- */
-async function updateTodoEffort(
-  id: number,
-  effort: TodoRow["effort"],
-): Promise<Result<TodoRow, AppError>> {
-  const initResult = await initializeStore();
-  if (!initResult.ok) {
-    return initResult;
-  }
-
-  const existing = getTodoById(id);
-  if (!existing) {
-    return {
-      ok: false,
-      error: { kind: "not_found", message: "Todo not found." },
-    };
-  }
-
-  if (existing.effort === effort) {
-    return { ok: true, value: existing };
-  }
-
-  try {
-    const event: TodoEffortUpdatedEvent = {
-      seq: getNextEventSeq(),
-      stream: "todo",
-      kind: "todo_effort_updated",
-      entity_id: id,
-      at: new Date().toISOString(),
-      data: {
-        effort,
-      },
-    };
-
-    await appendEvent(event);
-    applyEvent(event);
-
-    const updated = getTodoById(id);
-    if (!updated) {
-      return {
-        ok: false,
-        error: { kind: "internal", message: "Failed to update effort." },
-      };
-    }
-
-    return { ok: true, value: updated };
-  } catch {
-    return {
-      ok: false,
-      error: { kind: "internal", message: "Failed to update effort." },
-    };
-  }
-}
-
-/**
- * Updates the `cost_of_delay` field of a todo by appending a
- * `todo_cost_of_delay_updated` event and applying it to the current projection.
- *
- * If the value is unchanged, no event is written and the current todo is
- * returned as-is.
- */
-async function updateTodoCostOfDelay(
-  id: number,
-  costOfDelay: TodoRow["cost_of_delay"],
-): Promise<Result<TodoRow, AppError>> {
-  const initResult = await initializeStore();
-  if (!initResult.ok) {
-    return initResult;
-  }
-
-  const existing = getTodoById(id);
-  if (!existing) {
-    return {
-      ok: false,
-      error: { kind: "not_found", message: "Todo not found." },
-    };
-  }
-
-  if (existing.cost_of_delay === costOfDelay) {
-    return { ok: true, value: existing };
-  }
-
-  try {
-    const event: TodoCostOfDelayUpdatedEvent = {
-      seq: getNextEventSeq(),
-      stream: "todo",
-      kind: "todo_cost_of_delay_updated",
-      entity_id: id,
-      at: new Date().toISOString(),
-      data: {
-        cost_of_delay: costOfDelay,
-      },
-    };
-
-    await appendEvent(event);
-    applyEvent(event);
-
-    const updated = getTodoById(id);
-    if (!updated) {
-      return {
-        ok: false,
-        error: {
-          kind: "internal",
-          message: "Failed to update cost of delay.",
-        },
-      };
-    }
-
-    return { ok: true, value: updated };
-  } catch {
-    return {
-      ok: false,
-      error: {
-        kind: "internal",
-        message: "Failed to update cost of delay.",
-      },
-    };
-  }
-}
-
 export {
   initializeStore,
   getTodos,
   getTodo,
-  updateTodoShort,
-  updateTodoDueDate,
-  updateTodoEffort,
-  updateTodoCostOfDelay,
+  updateTodoWithEvent,
   createTodo,
 };
