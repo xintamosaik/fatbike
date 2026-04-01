@@ -8,3 +8,6 @@
 {"seq":8,"stream":"todo","kind":"todo_effort_updated","entity_id":1,"at":"2026-03-31T22:28:40.933Z","data":{"effort":"weeks"}}
 {"seq":9,"stream":"todo","kind":"todo_cost_of_delay_updated","entity_id":1,"at":"2026-03-31T22:32:43.631Z","data":{"cost_of_delay":1}}
 {"seq":10,"stream":"todo","kind":"todo_cost_of_delay_updated","entity_id":2,"at":"2026-03-31T22:32:46.796Z","data":{"cost_of_delay":2}}
+{"seq":11,"stream":"todo","kind":"todo_due_date_updated","entity_id":1,"at":"2026-04-01T21:18:57.333Z","data":{"due_date":"2026-04-23"}}
+{"seq":12,"stream":"todo","kind":"todo_short_updated","entity_id":1,"at":"2026-04-01T21:19:01.523Z","data":{"short":"Understand event sourcing 2"}}
+{"seq":13,"stream":"todo","kind":"todo_effort_updated","entity_id":2,"at":"2026-04-01T21:19:04.738Z","data":{"effort":"days"}}
