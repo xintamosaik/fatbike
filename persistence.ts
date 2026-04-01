@@ -2,7 +2,7 @@ import type { AppError, Result } from "./error";
 import type { TodoRow } from "./types";
 
 import type { TodoEvent } from "./todo-events";
-import type { TodoCreatedEvent } from "./todo-create";
+import type { TodoCreatedData, TodoCreatedEvent } from "./todo-create";
 
 import { appendEvent } from "./todo-store";
 import {
@@ -65,7 +65,7 @@ async function initializeStore(): Promise<Result<void, AppError>> {
  *
  * Returns the projected current state of the created todo.
  */
-async function createTodo(): Promise<Result<TodoRow, AppError>> {
+async function createTodo(data: TodoCreatedData): Promise<Result<TodoRow, AppError>> {
   const initResult = await initializeStore();
   if (!initResult.ok) {
     return initResult;
@@ -78,12 +78,7 @@ async function createTodo(): Promise<Result<TodoRow, AppError>> {
       kind: "todo_created",
       entity_id: getNextTodoId(),
       at: new Date().toISOString(),
-      data: {
-        short: "",
-        due_date: "",
-        cost_of_delay: 0,
-        effort: "mins",
-      },
+      data,
     };
 
     await appendEvent(event);

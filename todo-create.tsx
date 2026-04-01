@@ -37,7 +37,15 @@ type TodoCreatedEvent = {
  * list. That keeps the interaction local and matches the UI swap strategy.
  */
 async function handleTodoCreate(): Promise<Response> {
-    const createResult = await createTodo();
+    const data: TodoCreatedData = {
+    
+        short: "",
+        due_date: "",
+        cost_of_delay: 0,
+        effort: "mins",
+ 
+    };
+    const createResult = await createTodo(data);
     if (!createResult.ok) {
         return appErrorResponse(createResult.error);
     }
@@ -46,4 +54,4 @@ async function handleTodoCreate(): Promise<Response> {
 }
 
 export default handleTodoCreate;
-export type { TodoCreatedEvent };
+export type { TodoCreatedData, TodoCreatedEvent };

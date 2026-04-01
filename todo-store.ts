@@ -56,7 +56,7 @@ async function readEventsFromFile(): Promise<TodoEvent[]> {
  * Writes are serialized through an in-process queue so multiple appends do not
  * interleave at the file level.
  */
-function appendEvent(event: TodoEvent): Promise<void> {
+function appendEvent(event: TodoEvent ): Promise<void> {
   const line = `${JSON.stringify(event)}\n`;
   writeQueue = writeQueue.then(() => appendFile(eventsFile, line, "utf8"));
   return writeQueue;
