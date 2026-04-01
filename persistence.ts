@@ -140,7 +140,7 @@ async function getTodo(id: number): Promise<Result<TodoRow, AppError>> {
 
   return { ok: true, value: todo };
 }
-async function updateTodoWithEvent<TEvent extends TodoEvent>(
+async function updateExistingTodo<TEvent extends TodoEvent>(
   args: {
     id: number;
     hasChanged: (existing: TodoRow) => boolean;
@@ -193,6 +193,6 @@ export {
   initializeStore,
   getTodos,
   getTodo,
-  updateTodoWithEvent,
+  updateExistingTodo,
   createTodo,
 };

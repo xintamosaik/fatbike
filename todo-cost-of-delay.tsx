@@ -3,7 +3,7 @@ import type { FormDataEntryValue } from "bun";
 import type { AppError, Result } from "./error";
 
 import { appErrorResponse, htmlResponse } from "./response";
-import { getTodo, updateTodoWithEvent } from "./persistence";
+import { getTodo, updateExistingTodo } from "./persistence";
 
 /**
  * The data shape for a `todo_cost_of_delay_updated` event data, which captures
@@ -27,7 +27,7 @@ type TodoCostOfDelayUpdatedEvent = {
 };
 
 function updateTodoCostOfDelay( id: number, costOfDelay: TodoCostOfDelayUpdatedData["cost_of_delay"]): Promise<Result<TodoRow, AppError>> {
-    return updateTodoWithEvent({
+    return updateExistingTodo({
         id,
         hasChanged: (existing) => existing.cost_of_delay !== costOfDelay,
         makeEvent: ({ seq, at }) => ({

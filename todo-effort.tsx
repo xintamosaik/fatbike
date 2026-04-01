@@ -3,7 +3,7 @@ import type { FormDataEntryValue } from "bun";
 import type { AppError, Result } from "./error";
 
 import { appErrorResponse, htmlResponse } from "./response";
-import { getTodo, updateTodoWithEvent } from "./persistence";
+import { getTodo, updateExistingTodo } from "./persistence";
 
 /**
  * The data shape for a `todo_effort_updated` event data, which captures a
@@ -25,7 +25,7 @@ type TodoEffortUpdatedEvent = {
     data: TodoEffortUpdatedData;
 };
 function updateTodoEffort( id: number, effort: TodoEffortUpdatedData["effort"]): Promise<Result<TodoRow, AppError>> {
-    return updateTodoWithEvent({
+    return updateExistingTodo({
         id,
         hasChanged: (existing) => existing.effort !== effort,
         makeEvent: ({ seq, at }) => ({

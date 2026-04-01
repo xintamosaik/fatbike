@@ -2,7 +2,7 @@ import type { TodoRow } from "./types";
 import type { FormDataEntryValue } from "bun";
 import type { AppError, Result } from "./error";
 import { appErrorResponse, htmlResponse, } from "./response";
-import { updateTodoWithEvent, getTodo } from "./persistence";
+import { updateExistingTodo, getTodo } from "./persistence";
 
 /**
  * The data shape for a `todo_short_updated` event data, which captures a change to the
@@ -25,7 +25,7 @@ type TodoShortUpdatedEvent = {
     data: TodoShortUpdatedData;
 };
 function updateTodoShort( id: number, short: TodoShortUpdatedData["short"]): Promise<Result<TodoRow, AppError>> {
-    return updateTodoWithEvent({
+    return updateExistingTodo({
         id,
         hasChanged: (existing) => existing.short !== short,
         makeEvent: ({ seq, at }) => ({
