@@ -1,0 +1,17 @@
+* {
+    font-family: sans-serif;
+}
+button {
+    background-color: deeppink;
+    border: none;
+    color: white;
+    padding: 1ch;
+    cursor: pointer;
+}
+button:hover {
+    background-color: hotpink;
+}
+input {
+    border:none;
+    padding: 1ch;
+}
