@@ -5,12 +5,15 @@ import type { AppError, Result } from "./error";
 import { appErrorResponse, htmlResponse } from "./response";
 import { getTodo, updateExistingTodo } from "./persistence";
 
+type EffortValue = "mins" | "hours" | "days" | "weeks" | "months";
+const effortValues = ["mins", "hours", "days", "weeks", "months"] as const satisfies readonly EffortValue[];
+
 /**
  * The data shape for a `todo_effort_updated` event data, which captures a
  * change to the `effort` field of a todo.
  */
 type TodoEffortUpdatedData = {
-    effort: "mins" | "hours" | "days" | "weeks" | "months";
+    effort: EffortValue;
 };
 /**
  * The shape of a `todo_effort_updated` event, which captures an update to
@@ -49,15 +52,16 @@ function updateTodoEffort( id: number, effort: TodoEffortUpdatedData["effort"]):
 function EffortEditor(props: { todo: TodoRow }) {
     return (
         <form
+            style={{ display: "flex", gap: "1ch", alignItems: "center" }}
             fx-action={`/todos/${props.todo.id}/update/effort`}
             fx-method="POST"
             fx-swap="outerHTML"
         >
-            <button type="submit" name="effort" value="mins">mins</button>
-            <button type="submit" name="effort" value="hours">hours</button>
-            <button type="submit" name="effort" value="days">days</button>
-            <button type="submit" name="effort" value="weeks">weeks</button>
-            <button type="submit" name="effort" value="months">months</button>
+            {effortValues.map((v) => (
+                <button key={v} type="submit" name="effort" value={v}>
+                    {v}
+                </button>
+            ))}
         </form>
     );
 }
@@ -96,9 +100,6 @@ type FormLike = {
     get(name: string): FormDataEntryValue | null;
 };
 
-const effortValues = ["mins", "hours", "days", "weeks", "months"] as const;
-type EffortValue = (typeof effortValues)[number];
-
 /**
  * Parses and validates the submitted effort value.
  */
@@ -117,7 +118,7 @@ function parseEffortUpdate(
         };
     }
 
-    if (!effortValues.includes(rawEffort as EffortValue)) {
+    if (!(effortValues as readonly string[]).includes(rawEffort)) {
         return {
             ok: false,
             error: {
