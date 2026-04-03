@@ -12,7 +12,7 @@ import { CostOfDelayDisplay } from "./todo-cost-of-delay";
  *
  * Architectural role:
  * - loads the current read model from persistence
- * - renders the full table view
+ * - renders the full list view
  *
  * Unlike create/update handlers, this returns a collection fragment because
  * the list page is the entry point for the UI.
@@ -27,18 +27,18 @@ async function handleTodosList(): Promise<Response> {
 }
 
 /**
- * Table fragments for todo list rendering.
+ * List fragments for todo list rendering.
  *
  * Architectural role:
  * - define reusable HTML fragments for the list read model
- * - keep handlers free from table markup
+ * - keep handlers free from layout markup
  */
 
 /**
- * Renders a single todo row.
+ * Renders a single todo item row.
  *
  * This fragment is used both when rendering the full list and when appending
- * one newly created todo to the existing table body.
+ * one newly created todo to the existing list container.
  */
 function TodoRowDisplay(props: { todo: TodoRow }) {
   return (
@@ -60,9 +60,9 @@ function TodoRowDisplay(props: { todo: TodoRow }) {
 }
 
 /**
- * Renders the full todo table.
+ * Renders the full todo list.
  *
- * The table body is also a swap target for row-level updates such as
+ * The list container is also a swap target for row-level updates such as
  * appending newly created todos.
  */
 function TodoList(props: { todos: TodoRow[] }) {

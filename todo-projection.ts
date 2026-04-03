@@ -14,7 +14,7 @@ import { readEventsFromFile } from "./todo-store";
  */
 
 /**
- * The in-memory projection of todos, keyed by ID and ordered by creation.
+ * The in-memory projection of todos, keyed by ID and returned in ascending ID order.
  */
 const byId = new Map<number, TodoRow>();
 
@@ -128,9 +128,7 @@ function applyEvent(event: TodoEvent): void {
 }
 
 /**
- * Compares two events by their sequence number.
- * Sorts events by their sequence number, which is the global ordering of all events in the system. 
- * This is necessary to ensure that we apply events in the correct order when rebuilding the projection from disk.
+ * Compares two events by global sequence number so replay happens in persisted order.
  */
 function byEventSequence(a: TodoEvent, b: TodoEvent): number {
     return a.seq - b.seq;

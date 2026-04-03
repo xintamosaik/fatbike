@@ -15,7 +15,7 @@ import { initializeStore } from "./persistence";
  * Architectural role:
  * - defines route-to-handler wiring
  * - performs route-level parameter parsing
- * - initializes the store on process startup
+ * - attempts store initialization on process startup
  *
  * Business and persistence logic should stay out of this file.
  */
