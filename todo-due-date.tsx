@@ -26,7 +26,7 @@ type TodoDueDateUpdatedEvent = {
     data: TodoDueDateUpdatedData;
 };
 
-function updateTodoDueDate( id: number, dueDate: TodoDueDateUpdatedData["due_date"]): Promise<Result<TodoRow, AppError>> {
+function updateTodoDueDate(id: number, dueDate: TodoDueDateUpdatedData["due_date"]): Promise<Result<TodoRow, AppError>> {
     return updateExistingTodo({
         id,
         hasChanged: (existing) => existing.due_date !== dueDate,
@@ -51,15 +51,21 @@ function updateTodoDueDate( id: number, dueDate: TodoDueDateUpdatedData["due_dat
 function DueDateEditor(props: { todo: TodoRow }) {
     return (
         <form
+            className="due-date-field"
             fx-action={`/todos/${props.todo.id}/update/due-date`}
             fx-method="POST"
             fx-swap="outerHTML"
         >
-            <label>
-                Due Date{" "}
-                <input name="due_date" type="date" value={props.todo.due_date} />
-            </label>{" "}
-            <button type="submit">Save</button>
+            <input
+                name="due_date"
+                type="date"
+                value={props.todo.due_date}
+                fx-action={`/todos/${props.todo.id}/update/due-date`}
+                fx-method="POST"
+                fx-swap="outerHTML"
+                fx-target=".due-date-field"
+                fx-trigger="change"
+            />
         </form>
     );
 }
@@ -163,9 +169,9 @@ async function handleTodoUpdateDueDate(
 function DueDateDisplay(props: { todo: TodoRow }) {
     const link = `/todos/${props.todo.id}/edit/due-date`;
     return (
-        <a href={link} fx-action={link} fx-method="POST" fx-swap="outerHTML">
+        <button fx-action={link} fx-method="POST" fx-swap="outerHTML">
             {props.todo.due_date || "<ADD>"}
-        </a>
+        </button>
     );
 }
 

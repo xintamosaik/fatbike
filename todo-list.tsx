@@ -42,20 +42,20 @@ async function handleTodosList(): Promise<Response> {
  */
 function TodoRowDisplay(props: { todo: TodoRow }) {
   return (
-    <tr>
-      <td>
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", fontWeight: "bold" }}>
+      <div>
         <ShortDisplay todo={props.todo} />
-      </td>
-      <td>
+      </div>
+      <div>
         <DueDateDisplay todo={props.todo} />
-      </td>
-      <td>
+      </div>
+      <div>
         <CostOfDelayDisplay todo={props.todo} />
-      </td>
-      <td>
+      </div>
+      <div>
         <EffortDisplay todo={props.todo} />
-      </td>
-    </tr>
+      </div>
+    </div>
   );
 }
 
@@ -69,29 +69,24 @@ function TodoList(props: { todos: TodoRow[] }) {
   return (
     <section>
       <h2>Todos</h2>
-
-      <table>
-        <thead>
-          <tr>
-            <th>Short</th>
-            <th>Due Date</th>
-            <th>Cost of Delay</th>
-            <th>Effort</th>
-          </tr>
-        </thead>
-        <tbody id="todos-list">
-          <tr>
-            <td colSpan={4}>
-              <a href="/todos/new" fx-action="/todos/new" fx-target="#todos-list" fx-method="POST" fx-swap="beforeend">
-                + New Todo
-              </a>
-            </td>
-          </tr>
+      <div style={{ display: "flex", flexDirection: "column", gap: "1ch" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", fontWeight: "bold" }}>
+          <span>Short</span>
+          <span>Due Date</span>
+          <span>Cost of Delay</span>
+          <span>Effort</span>
+        </div>
+        <div>
+          <button fx-action="/todos/new" fx-target="#todos-list" fx-method="POST" fx-swap="beforeend">
+            + New Todo
+          </button>
+        </div>
+        <div id="todos-list" style={{ display: "grid", gridTemplateColumns: "1fr", fontWeight: "bold", gap: "1ch" }}>
           {props.todos.map((todo) => (
             <TodoRowDisplay key={todo.id} todo={todo} />
           ))}
-        </tbody>
-      </table>
+        </div>
+      </div>
     </section>
   );
 }

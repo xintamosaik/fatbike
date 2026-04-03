@@ -10,7 +10,16 @@ import { getTodo, updateExistingTodo } from "./persistence";
  * a change to the `cost_of_delay` field of a todo.
  */
 type TodoCostOfDelayUpdatedData = {
-    cost_of_delay: -2 | -1 | 0 | 1 | 2;
+    cost_of_delay: CostOfDelayValue;
+};
+type CostOfDelayValue = -2 | -1 | 0 | 1 | 2;
+const costOfDelayValues = ["-2", "-1", "0", "1", "2"] as const;
+const costOfDelayLabels: Record<string, string> = {
+    "-2": "MIN",
+    "-1": "LOW",
+    "0": "NORMAL",
+    "1": "HIGH",
+    "2": "MAX",
 };
 
 /**
@@ -26,7 +35,7 @@ type TodoCostOfDelayUpdatedEvent = {
     data: TodoCostOfDelayUpdatedData;
 };
 
-function updateTodoCostOfDelay( id: number, costOfDelay: TodoCostOfDelayUpdatedData["cost_of_delay"]): Promise<Result<TodoRow, AppError>> {
+function updateTodoCostOfDelay(id: number, costOfDelay: TodoCostOfDelayUpdatedData["cost_of_delay"]): Promise<Result<TodoRow, AppError>> {
     return updateExistingTodo({
         id,
         hasChanged: (existing) => existing.cost_of_delay !== costOfDelay,
@@ -50,22 +59,18 @@ function updateTodoCostOfDelay( id: number, costOfDelay: TodoCostOfDelayUpdatedD
  */
 function CostOfDelayEditor(props: { todo: TodoRow }) {
     return (
-        <form
+        <form 
+            style={{ display: "flex", gap: "1ch", alignItems: "center" }}
             fx-action={`/todos/${props.todo.id}/update/cost-of-delay`}
             fx-method="POST"
             fx-swap="outerHTML"
         >
-            <label>
-                Cost of Delay{" "}
-                <select name="cost_of_delay" value={String(props.todo.cost_of_delay)} required>
-                    <option value="-2">-2</option>
-                    <option value="-1">-1</option>
-                    <option value="0">0</option>
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                </select>
-            </label>{" "}
-            <button type="submit">Save</button>
+            {costOfDelayValues.map((v) => (
+                <button type="submit" name="cost_of_delay" value={v}>
+                    {costOfDelayLabels[v]}
+                </button>
+            ))}
+
         </form>
     );
 }
@@ -104,8 +109,6 @@ type FormLike = {
     get(name: string): FormDataEntryValue | null;
 };
 
-const costOfDelayValues = ["-2", "-1", "0", "1", "2"] as const;
-type CostOfDelayValue = -2 | -1 | 0 | 1 | 2;
 
 /**
  * Parses and validates the submitted cost of delay value.
@@ -125,7 +128,7 @@ function parseCostOfDelayUpdate(
         };
     }
 
-    if (!costOfDelayValues.includes(rawCostOfDelay as (typeof costOfDelayValues)[number])) {
+    if (!(costOfDelayValues as readonly string[]).includes(rawCostOfDelay)) {
         return {
             ok: false,
             error: {
@@ -164,7 +167,6 @@ async function handleTodoUpdateCostOfDelay(
 }
 
 
-
 /**
  * Read-only display fragment for the todo cost of delay field.
  *
@@ -173,9 +175,9 @@ async function handleTodoUpdateCostOfDelay(
 function CostOfDelayDisplay(props: { todo: TodoRow }) {
     const link = `/todos/${props.todo.id}/edit/cost-of-delay`;
     return (
-        <a href={link} fx-action={link} fx-method="POST" fx-swap="outerHTML">
-            {props.todo.cost_of_delay}
-        </a>
+        <button fx-action={link} fx-method="POST" fx-swap="outerHTML">
+            {costOfDelayLabels[String(props.todo.cost_of_delay)]}
+        </button>
     );
 }
 export {

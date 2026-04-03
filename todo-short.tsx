@@ -24,7 +24,7 @@ type TodoShortUpdatedEvent = {
     at: string;
     data: TodoShortUpdatedData;
 };
-function updateTodoShort( id: number, short: TodoShortUpdatedData["short"]): Promise<Result<TodoRow, AppError>> {
+function updateTodoShort(id: number, short: TodoShortUpdatedData["short"]): Promise<Result<TodoRow, AppError>> {
     return updateExistingTodo({
         id,
         hasChanged: (existing) => existing.short !== short,
@@ -47,13 +47,13 @@ function updateTodoShort( id: number, short: TodoShortUpdatedData["short"]): Pro
 function ShortDisplay(props: { todo: TodoRow }) {
     const link = `/todos/${props.todo.id}/edit/short`;
     return (
-        <a href={link}
+        <button
             fx-action={link}
             fx-method="POST"
             fx-swap="outerHTML"
         >
             {props.todo.short || "<ADD>"}
-        </a>
+        </button>
     );
 }
 
@@ -155,17 +155,13 @@ function ShortEditor(props: { todo: TodoRow }) {
             fx-method="POST"
             fx-swap="outerHTML"
         >
-            <label>
-                Short{" "}
-                <input
-                    name="short"
-                    value={props.todo.short}
-                    required
-                    minLength={3}
-                    maxLength={120}
-                />
-            </label>{" "}
-            <button type="submit">Save</button>
+            <input
+                name="short"
+                value={props.todo.short}
+                required
+                minLength={3}
+                maxLength={120}
+            />
         </form>
     );
 }

@@ -53,17 +53,11 @@ function EffortEditor(props: { todo: TodoRow }) {
             fx-method="POST"
             fx-swap="outerHTML"
         >
-            <label>
-                Effort{" "}
-                <select name="effort" value={props.todo.effort} required>
-                    <option value="mins">mins</option>
-                    <option value="hours">hours</option>
-                    <option value="days">days</option>
-                    <option value="weeks">weeks</option>
-                    <option value="months">months</option>
-                </select>
-            </label>{" "}
-            <button type="submit">Save</button>
+            <button type="submit" name="effort" value="mins">mins</button>
+            <button type="submit" name="effort" value="hours">hours</button>
+            <button type="submit" name="effort" value="days">days</button>
+            <button type="submit" name="effort" value="weeks">weeks</button>
+            <button type="submit" name="effort" value="months">months</button>
         </form>
     );
 }
@@ -172,9 +166,9 @@ async function handleTodoUpdateEffort(
 function EffortDisplay(props: { todo: TodoRow }) {
     const link = `/todos/${props.todo.id}/edit/effort`;
     return (
-        <a href={link} fx-action={link} fx-method="POST" fx-swap="outerHTML">
+        <button fx-action={link} fx-method="POST" fx-swap="outerHTML">
             {props.todo.effort}
-        </a>
+        </button>
     );
 }
 
