@@ -66,7 +66,7 @@ function CostOfDelayEditor(props: { todo: TodoRow }) {
             fx-swap="outerHTML"
         >
             {costOfDelayValues.map((v) => (
-                <button type="submit" name="cost_of_delay" value={v}>
+                <button key={v} type="submit" name="cost_of_delay" value={v}>
                     {costOfDelayLabels[v]}
                 </button>
             ))}
