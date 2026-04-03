@@ -157,7 +157,7 @@ function ShortEditor(props: { todo: TodoRow }) {
         >
             <input
                 name="short"
-                value={props.todo.short}
+                defaultValue={props.todo.short}
                 required
                 minLength={3}
                 maxLength={120}

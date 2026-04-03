@@ -59,7 +59,7 @@ function DueDateEditor(props: { todo: TodoRow }) {
             <input
                 name="due_date"
                 type="date"
-                value={props.todo.due_date}
+                defaultValue={props.todo.due_date}
                 fx-action={`/todos/${props.todo.id}/update/due-date`}
                 fx-method="POST"
                 fx-swap="outerHTML"
